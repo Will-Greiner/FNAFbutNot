@@ -1,0 +1,8 @@
+Steamworks.NET:
+https://github.com/rlabrecque/Steamworks.NET.git?path=/com.rlabrecque.steamworks.net
+
+SteamNetworkingSockets Transport for Unity NetCode for GameObjects
+https://github.com/Unity-Technologies/multiplayer-community-contributions.git?path=/Transports/com.community.netcode.transport.steamnetworkingsockets
+
+
+Steamworks.NET gives you lobbies/invites/overlay. NGO still needs a transport to push game packets over Steam’s P2P. The transport packages above plug NGO into Steam networking.
