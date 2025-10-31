@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5801228738945456815}
   - component: {fileID: 6670687252007693972}
   m_Layer: 0
-  m_Name: Guard
+  m_Name: SecurityBotLobby
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

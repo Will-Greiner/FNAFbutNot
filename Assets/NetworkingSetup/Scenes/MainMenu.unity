@@ -1008,7 +1008,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1545682510}
+      - m_Target: {fileID: 1545682512}
         m_TargetAssemblyTypeName: LobbyPlayerSpawner, Assembly-CSharp
         m_MethodName: SwapToIndex
         m_Mode: 3
@@ -1096,79 +1096,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &945766331
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 945766334}
-  - component: {fileID: 945766332}
-  - component: {fileID: 945766333}
-  m_Layer: 0
-  m_Name: CharacterRosterManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &945766332
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 945766331}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2896988179
-  InScenePlacedSourceGlobalObjectIdHash: 0
-  DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 0
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
-  SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
---- !u!114 &945766333
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 945766331}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e24873723d34604e9b9bd65066b54f2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CharacterRosterManager
-  ShowTopMostFoldoutHeaderGroup: 1
-  lps: {fileID: 0}
-  localClientId: 0
---- !u!4 &945766334
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 945766331}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.14452, y: 0.10116, z: 0.14451}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1010479514
 GameObject:
   m_ObjectHideFlags: 0
@@ -1384,7 +1311,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1545682510}
+      - m_Target: {fileID: 1545682512}
         m_TargetAssemblyTypeName: LobbyPlayerSpawner, Assembly-CSharp
         m_MethodName: SwapToIndex
         m_Mode: 3
@@ -1711,7 +1638,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1545682510}
+      - m_Target: {fileID: 1545682512}
         m_TargetAssemblyTypeName: LobbyPlayerSpawner, Assembly-CSharp
         m_MethodName: SwapToIndex
         m_Mode: 3
@@ -1908,7 +1835,7 @@ GameObject:
   - component: {fileID: 1545682509}
   - component: {fileID: 1545682511}
   - component: {fileID: 1545682508}
-  - component: {fileID: 1545682510}
+  - component: {fileID: 1545682512}
   m_Layer: 0
   m_Name: LobbyManager
   m_TagString: Untagged
@@ -1943,31 +1870,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1545682510
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1545682507}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 764d03d22dddc744f9b41146d66d646a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LobbyPlayerSpawner
-  ShowTopMostFoldoutHeaderGroup: 1
-  hostPrefab: {fileID: 5801228738945456815, guid: 33717c4510d11304eb603ac18b4bef2b, type: 3}
-  animatronicPrefabs:
-  - {fileID: 5801228738945456815, guid: 9c1f38b4477bc6f47a0d233f8ba1fe76, type: 3}
-  - {fileID: 5801228738945456815, guid: dbfc433878562ff40b334d30cf6ad850, type: 3}
-  - {fileID: 5801228738945456815, guid: cf1f2abb6805347449e8811a0b0afaf8, type: 3}
-  - {fileID: 5801228738945456815, guid: 85fbecb330e257044b1ef07bd664638e, type: 3}
-  playerSpawnPoints:
-  - {fileID: 1252061166}
-  - {fileID: 359702648}
-  - {fileID: 1573661994}
-  - {fileID: 1245896155}
-  - {fileID: 1780707235}
 --- !u!114 &1545682511
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1993,6 +1895,31 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
+--- !u!114 &1545682512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1545682507}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 764d03d22dddc744f9b41146d66d646a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyPlayerSpawner
+  ShowTopMostFoldoutHeaderGroup: 1
+  hostPrefab: {fileID: 5801228738945456815, guid: 33717c4510d11304eb603ac18b4bef2b, type: 3}
+  animatronicPrefabs:
+  - {fileID: 5801228738945456815, guid: 9c1f38b4477bc6f47a0d233f8ba1fe76, type: 3}
+  - {fileID: 5801228738945456815, guid: dbfc433878562ff40b334d30cf6ad850, type: 3}
+  - {fileID: 5801228738945456815, guid: cf1f2abb6805347449e8811a0b0afaf8, type: 3}
+  - {fileID: 5801228738945456815, guid: 85fbecb330e257044b1ef07bd664638e, type: 3}
+  playerSpawnPoints:
+  - {fileID: 1252061166}
+  - {fileID: 359702648}
+  - {fileID: 1573661994}
+  - {fileID: 1245896155}
+  - {fileID: 1780707235}
 --- !u!1 &1560914455
 GameObject:
   m_ObjectHideFlags: 0
@@ -2205,7 +2132,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1545682510}
+      - m_Target: {fileID: 1545682512}
         m_TargetAssemblyTypeName: LobbyPlayerSpawner, Assembly-CSharp
         m_MethodName: SwapToIndex
         m_Mode: 3
@@ -2515,4 +2442,3 @@ SceneRoots:
   - {fileID: 1545682509}
   - {fileID: 319679221}
   - {fileID: 123892347}
-  - {fileID: 945766334}
