@@ -54,12 +54,24 @@ public class AnimatronicMovementRotation : MonoBehaviour
             //}
             //else
             //{
-            //    yDirection = Mathf.MoveTowards(yDirection, -targetAngle, turningSpeed * Time.deltaTime);
+            //    yDirection = Mathf.MoveTowards(yDirection, targetAngle -360, turningSpeed * Time.deltaTime);
             //}
 
-            yDirection = Mathf.MoveTowards(yDirection, targetAngle, turningSpeed * Time.deltaTime);
+            //yDirection = Mathf.MoveTowards(yDirection, targetAngle, turningSpeed * Time.deltaTime);
 
-            transform.rotation = Quaternion.Euler(0, yDirection, 0);
+            float angelDiff = targetAngle - transform.eulerAngles.y;
+            if (angelDiff >= 0)
+            {
+                //rotate right
+                yDirection = Mathf.MoveTowards(yDirection, targetAngle, turningSpeed * Time.deltaTime);
+
+            }
+            else
+            {
+                //rotate left
+                yDirection = Mathf.MoveTowards(yDirection, targetAngle - 180, turningSpeed * Time.deltaTime);
+            }
+                transform.rotation = Quaternion.Euler(0, yDirection, 0);
             
         }
         else
