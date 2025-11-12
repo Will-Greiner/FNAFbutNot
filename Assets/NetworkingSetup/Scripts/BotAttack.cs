@@ -57,6 +57,7 @@ public class BotAttack : NetworkBehaviour
 
         for (int i = 0; i < hits; i++)
         {
+            Debug.Log("Atacc");
             var collider = s_overlapCache[i];
             if (!collider) continue;
 
@@ -89,7 +90,6 @@ public class BotAttack : NetworkBehaviour
     [ClientRpc]
     private void PlayAttackFxClientRpc() 
     {
-        Debug.Log("Atacc");
         animator.SetTrigger("attack");
     }
 
