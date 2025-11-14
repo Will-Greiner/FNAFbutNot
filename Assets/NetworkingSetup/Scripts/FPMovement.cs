@@ -55,7 +55,7 @@ public class FPMovement : NetworkBehaviour
 
         if (IsOwner)
         {
-            //LockCursor(true);
+            LockCursor(false);
 
             // initialize look from current transforms
             if (cameraTransform != null)

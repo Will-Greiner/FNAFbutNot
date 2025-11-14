@@ -72,6 +72,9 @@ public class LobbyPlayerSpawner : NetworkBehaviour
                 spawnIndex = -1,
             };
             sessionData[clientId] = data;
+
+            // Store data
+            PlayerSelectionStore.SetChosenPrefabIndex(clientId, data.chosenPrefabIndex);
         }
         // Get existing data
         return data;
@@ -142,6 +145,7 @@ public class LobbyPlayerSpawner : NetworkBehaviour
     private void OnClientDisconnected(ulong clientId)
     {
         sessionData.Remove(clientId);
+        PlayerSelectionStore.Clear(clientId);
     }
 
     /// <summary>
@@ -170,6 +174,9 @@ public class LobbyPlayerSpawner : NetworkBehaviour
         // Update session choice
         var data = GetOrCreate(clientId);
         data.chosenPrefabIndex = selectedIndex;
+
+        // Persist across scenes
+        PlayerSelectionStore.SetChosenPrefabIndex(clientId, selectedIndex);
 
         // Cache transform before despawn
         Vector3 position = oldPlayerObject.transform.position;
@@ -211,6 +218,8 @@ public class LobbyPlayerSpawner : NetworkBehaviour
     {
         if (nm == null || nm.SceneManager == null)
             return;
+
+        Debug.Log($"[Server] Loading gameplay scene '{sceneName}' for {nm.ConnectedClientsList.Count} clients");
         nm.SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
     }
 }

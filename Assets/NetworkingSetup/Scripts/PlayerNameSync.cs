@@ -8,15 +8,34 @@ public class PlayerNameSync : NetworkBehaviour
 {
     [SerializeField] private TMP_Text nameText;
 
-    //Owner can write; everyone reads. Replicates to all clients
-    private NetworkVariable<FixedString64Bytes> displayName = new NetworkVariable<FixedString64Bytes>(writePerm: NetworkVariableWritePermission.Owner);
+    // Owner writes, everyone reads
+    private readonly NetworkVariable<FixedString64Bytes> displayName =
+        new(writePerm: NetworkVariableWritePermission.Owner);
 
     public override void OnNetworkSpawn()
     {
+        // 1) Update UI whenever the value changes (on all clients)
+        displayName.OnValueChanged += OnNameChanged;
+
+        // 2) Apply the current value right now (handles late joiners)
+        OnNameChanged(default, displayName.Value);
+
+        // 3) Owner sets their Steam name once
         if (IsOwner)
         {
-            displayName.Value = SteamFriends.GetPersonaName();
-            nameText.text = displayName.Value.ToString();
+            FixedString64Bytes n = SteamFriends.GetPersonaName();
+            displayName.Value = n;
         }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        displayName.OnValueChanged -= OnNameChanged;
+    }
+
+    private void OnNameChanged(FixedString64Bytes oldValue, FixedString64Bytes newValue)
+    {
+        if (nameText != null)
+            nameText.text = newValue.ToString();
     }
 }

@@ -47,6 +47,7 @@ public class ThirdPersonController : NetworkBehaviour
 
     [Header("Refs")]
     [SerializeField] private Transform forwardRef; // camera boom/pivot
+    [SerializeField] private Transform camFollow;
     [SerializeField] private Animator animator;
 
     private Rigidbody rb;
@@ -57,6 +58,8 @@ public class ThirdPersonController : NetworkBehaviour
     // Client send throttle
     private float sendInterval = 1f / 60f; // ~60 Hz input; raise to 1/30f to save bandwidth
     private float sendTimer = 0f;
+
+    private OrbitCamera _localOrbit;
 
     void Awake()
     {
@@ -72,13 +75,49 @@ public class ThirdPersonController : NetworkBehaviour
     {
         // Server simulates; clients are kinematic followers of NetworkTransform (server authority)
         rb.isKinematic = !IsServer;
+
+        if (IsOwner)
+        {
+            BindLocalCameraRig();
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+
         // Only server should drive Animator state; clients just receive via NetworkAnimator
         if (!IsServer && animator) animator.applyRootMotion = false;
+    }
+    public override void OnNetworkDespawn()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
+    private void BindLocalCameraRig()
+    {
+        if (_localOrbit == null)
+            _localOrbit = FindFirstObjectByType<OrbitCamera>();
+
+        if (_localOrbit != null)
+        {
+            // Always set (or re-set) the follow target
+            _localOrbit.SetFollowTarget(camFollow);
+
+            // Only set forwardRef if we don't already have one.
+            if (forwardRef == null)
+                forwardRef = _localOrbit.ForwardReference;
+        }
+        else if (forwardRef == null && Camera.main != null)
+        {
+            // Fallback: still drive movement even if the rig isn't found yet.
+            forwardRef = Camera.main.transform;
+        }
     }
 
     void Update()
     {
         if (!IsOwner) return; // NGO: only the local owner drives input
+
+        BindLocalCameraRig();
 
         float vertical = Input.GetAxisRaw("Vertical");
         float horizontal = Input.GetAxisRaw("Horizontal");

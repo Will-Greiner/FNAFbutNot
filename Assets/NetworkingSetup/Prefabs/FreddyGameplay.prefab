@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: 708067608447141174}
   - component: {fileID: 8135549134565675163}
   - component: {fileID: 5311004283090878434}
+  - component: {fileID: 1847053955267768267}
   m_Layer: 6
   m_Name: FreddyGameplay
   m_TagString: Untagged
@@ -56,7 +57,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3482543456
+  GlobalObjectIdHash: 3337648147
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -180,7 +181,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 320
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
@@ -227,6 +228,7 @@ MonoBehaviour:
   speed: 3
   rotateSpeed: 300
   forwardRef: {fileID: 2651851597959439470}
+  camFollow: {fileID: 2651851597959439470}
   animator: {fileID: 2361600067406762558}
 --- !u!114 &2368895085328688059
 MonoBehaviour:
@@ -241,8 +243,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OwnedCameraEnabler
   ShowTopMostFoldoutHeaderGroup: 1
-  playerCamera: {fileID: 2468621284131559961}
-  audioListener: {fileID: 7982890220209077858}
+  playerCamera: {fileID: 0}
+  audioListener: {fileID: 0}
 --- !u!114 &708067608447141174
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -290,98 +292,31 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   movementComponent: {fileID: 8359475678454511402}
   rb: {fileID: 7486708451612632040}
---- !u!1 &5960556445991675756
-GameObject:
+--- !u!114 &1847053955267768267
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5756881073126373742}
-  - component: {fileID: 2468621284131559961}
-  - component: {fileID: 7982890220209077858}
-  m_Layer: 6
-  m_Name: TPCamera
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5756881073126373742
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5960556445991675756}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -1.6}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2651851597959439470}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!20 &2468621284131559961
-Camera:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5960556445991675756}
+  m_GameObject: {fileID: 825888122726571102}
   m_Enabled: 1
-  serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
-  m_projectionMatrixMode: 1
-  m_GateFitMode: 2
-  m_FOVAxisMode: 0
-  m_Iso: 200
-  m_ShutterSpeed: 0.005
-  m_Aperture: 16
-  m_FocusDistance: 10
-  m_FocalLength: 50
-  m_BladeCount: 5
-  m_Curvature: {x: 2, y: 11}
-  m_BarrelClipping: 0.25
-  m_Anamorphism: 0
-  m_SensorSize: {x: 36, y: 24}
-  m_LensShift: {x: 0, y: 0}
-  m_NormalizedViewPortRect:
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7950369600f43e43a68603994723838, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimatronicAttack
+  ShowTopMostFoldoutHeaderGroup: 1
+  attackRange: 2.2
+  attackRadius: 0.9
+  attackCooldown: 0.6
+  hittableLayers:
     serializedVersion: 2
-    x: 0
-    y: 0
-    width: 1
-    height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
-  field of view: 60
-  orthographic: 0
-  orthographic size: 5
-  m_Depth: 0
-  m_CullingMask:
+    m_Bits: 256
+  attackOrigin: {fileID: 2617553097184549763}
+  requireLineOfSight: 1
+  losBlockers:
     serializedVersion: 2
-    m_Bits: 4294967295
-  m_RenderingPath: -1
-  m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
-  m_TargetEye: 3
-  m_HDR: 1
-  m_AllowMSAA: 1
-  m_AllowDynamicResolution: 0
-  m_ForceIntoRT: 0
-  m_OcclusionCulling: 1
-  m_StereoConvergence: 10
-  m_StereoSeparation: 0.022
---- !u!81 &7982890220209077858
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5960556445991675756}
-  m_Enabled: 1
+    m_Bits: 0
+  animator: {fileID: 2361600067406762558}
 --- !u!1 &9009526265421854190
 GameObject:
   m_ObjectHideFlags: 0
@@ -391,10 +326,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2651851597959439470}
-  - component: {fileID: 5978808711619824492}
-  - component: {fileID: 5720174646718355734}
   m_Layer: 6
-  m_Name: CameraRig
+  m_Name: CamFollowTransform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -412,66 +345,9 @@ Transform:
   m_LocalPosition: {x: 0, y: 1.665, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 5756881073126373742}
+  m_Children: []
   m_Father: {fileID: 2617553097184549763}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5978808711619824492
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9009526265421854190}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 73e78244712e44645a938437e38567e1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::OrbitCamera
-  target: {fileID: 0}
-  targetOffset: {x: 0, y: 1.7, z: 0}
-  yaw: 0
-  pitch: 15
-  minPitch: -30
-  maxPitch: 70
-  mouseXSens: 1000
-  mouseYSens: 1000
-  distance: 2
-  minDistance: 2
-  maxDistance: 2
-  zoomSpeed: 4
-  collisionMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  sphereRadius: 0.2
-  followLerp: 20
---- !u!114 &5720174646718355734
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9009526265421854190}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9d9d2a1d5af49244a7cc42c7cc1d1c1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TestOrbitCamera
-  ShowTopMostFoldoutHeaderGroup: 1
-  sensitivity: {x: 800, y: 800}
-  yaw: 0
-  pitch: 15
-  minMaxPitch: {x: -30, y: 70}
-  cameraTransform: {fileID: 5756881073126373742}
-  obstructionMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  maxDistance: 2
-  minDistance: 0.2
-  collisionRadius: 0.25
-  wallBuffer: 0.05
-  pushInSpeed: 30
-  returnSpeed: 8
 --- !u!1001 &6542344078541721601
 PrefabInstance:
   m_ObjectHideFlags: 0

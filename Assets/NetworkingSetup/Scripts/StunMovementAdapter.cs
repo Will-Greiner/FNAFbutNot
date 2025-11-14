@@ -1,3 +1,4 @@
+// StunMovementAdapter.cs
 using Unity.Netcode;
 using UnityEngine;
 
@@ -10,14 +11,11 @@ public class StunMovementAdapter : NetworkBehaviour
 
     private StunState _stun;
 
-    private void Awake()
-    {
-        _stun = GetComponent<StunState>();
-    }
+    private void Awake() => _stun = GetComponent<StunState>();
 
     public override void OnNetworkSpawn()
     {
-        // Local-only: we only disable our own controls locally
+        // Local-only: disable our own controls locally
         if (!IsOwner) return;
 
         _stun.StunStarted += OnStunStartLocal;
@@ -38,17 +36,19 @@ public class StunMovementAdapter : NetworkBehaviour
     private void OnStunStartLocal()
     {
         if (movementComponent) movementComponent.enabled = false;
-        if (rb)
+
+        // Only legal to touch velocities on non-kinematic bodies.
+        if (rb && !rb.isKinematic)
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
+            rb.Sleep(); // optional, clears residual motion
         }
-        // TODO: play stun VFX/UI here (e.g., screen flash)
+        // Client-side kinematic proxies don't need velocity changes; disabling input is enough.
     }
 
     private void OnStunEndLocal()
     {
         if (movementComponent) movementComponent.enabled = true;
-        // TODO: stop VFX/UI
     }
 }

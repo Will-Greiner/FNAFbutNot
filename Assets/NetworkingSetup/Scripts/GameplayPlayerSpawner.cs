@@ -59,15 +59,22 @@ public class GameplayPlayerSpawner : NetworkBehaviour
         if (!IsServer)
             return;
 
+
+        Debug.Log($"[GameplayPlayerSpawner] OnLoadEventCompleted for scene {sceneName}. " + $"Completed: {string.Join(",", clientsCompleted)} | " + $"TimedOut: {string.Join(",", clientsTimedOut)}");
+
         // Only act in *gameplay* scene(s) where this spawner lives.
         // If you have multiple gameplay scenes, either place this component only in those scenes,
         // or extend this check with a scene name allowlist.
         if (!gameObject.scene.IsValid() || !gameObject.scene.isLoaded)
+        {
+            Debug.Log("[GameplayPlayerSpawner] Scene not valid/loaded on this object, skipping.");
             return;
+        }
 
         // Reposition everyone to new spawnpoints
         foreach (var connectedClient in nm.ConnectedClientsList)
         {
+            Debug.Log($"[GameplayPlayerSpawner] Spawning/repositioning client {connectedClient.ClientId}");
             SpawnOrReposition(connectedClient.ClientId, forceRespawn: false);
         }
     }
@@ -139,15 +146,17 @@ public class GameplayPlayerSpawner : NetworkBehaviour
             return hostGameplayPrefab;
 
         // Get lobby player selection
-        int lobbyIndex = 0;
-        if (LobbyPlayerSpawner.Instance != null)
-            lobbyIndex = LobbyPlayerSpawner.Instance.GetChosenPrefabIndex(clientId);
+        int lobbyIndex = PlayerSelectionStore.GetChosenPrefabIndex(clientId);
 
-        if (animatronicGameplayPrefabs != null && animatronicGameplayPrefabs.Length > 0)
-            return animatronicGameplayPrefabs[lobbyIndex];
+        if (animatronicGameplayPrefabs == null && animatronicGameplayPrefabs.Length == 0)
+            return null;
 
-        // No gameplay override provided — keep existing object type
-        return null;
+        lobbyIndex = Mathf.Clamp(lobbyIndex, 0, animatronicGameplayPrefabs.Length - 1);
+
+        Debug.Log($"[GameplayPlayerSpawner] Using lobby index {lobbyIndex} for client {clientId}");
+
+
+        return animatronicGameplayPrefabs[lobbyIndex];
     }
 
     private void SpawnOrReposition(ulong clientId, bool forceRespawn)

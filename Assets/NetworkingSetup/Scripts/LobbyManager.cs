@@ -1,11 +1,13 @@
 using Netcode.Transports;
 using Steamworks;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
 public class LobbyManager : MonoBehaviour
 {
-
+    [SerializeField] GameObject JoinFriendUI;
+    [SerializeField] GameObject WaitForStartUI;
 
     private Callback<LobbyCreated_t> onLobbyCreated;
     private Callback<LobbyEnter_t> onLobbyEntered;
@@ -15,6 +17,12 @@ public class LobbyManager : MonoBehaviour
     private CSteamID currentLobby;
 
     private const int maxLobbyMembers = 5;
+    public struct FriendLobbyInfo
+    {
+        public CSteamID FriendId;
+        public string FriendName;
+        public CSteamID LobbyId;
+    }
 
     private void Awake()
     {
@@ -26,6 +34,77 @@ public class LobbyManager : MonoBehaviour
     public void Host()
     {
         SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, maxLobbyMembers);
+    }
+
+    /// Scans your Steam friends for those currently sitting in a joinable lobby of this game.
+    public List<FriendLobbyInfo> GetJoinableFriendLobbies()
+    {
+        var list = new List<FriendLobbyInfo>();
+        int friendCount = SteamFriends.GetFriendCount(EFriendFlags.k_EFriendFlagImmediate);
+
+        for (int i = 0; i < friendCount; i++)
+        {
+            var fid = SteamFriends.GetFriendByIndex(i, EFriendFlags.k_EFriendFlagImmediate);
+
+            FriendGameInfo_t info;
+            if (SteamFriends.GetFriendGamePlayed(fid, out info))
+            {
+                bool sameGame = info.m_gameID.AppID() == SteamUtils.GetAppID();
+                bool hasLobby = info.m_steamIDLobby.IsValid() && info.m_steamIDLobby != CSteamID.Nil;
+
+                if (sameGame && hasLobby)
+                {
+                    list.Add(new FriendLobbyInfo
+                    {
+                        FriendId = fid,
+                        FriendName = SteamFriends.GetFriendPersonaName(fid),
+                        LobbyId = info.m_steamIDLobby
+                    });
+                }
+            }
+        }
+        return list;
+    }
+
+    /// Call this from Join button after the player picks a friend from the list.
+    public void JoinFriendLobby(CSteamID friendId)
+    {
+        FriendGameInfo_t info;
+        if (SteamFriends.GetFriendGamePlayed(friendId, out info) && info.m_steamIDLobby.IsValid())
+        {
+            JoinLobby(info.m_steamIDLobby);
+        }
+        else
+        {
+            Debug.LogWarning("Friend is not in a joinable lobby for this game.");
+        }
+    }
+
+    public void JoinLobby(CSteamID lobbyId)
+    {
+        if (lobbyId == CSteamID.Nil || !lobbyId.IsValid())
+        {
+            Debug.LogWarning("[Lobby] Invalid lobby ID");
+            return;
+        }
+
+        // If you’re already a host/client, shut down before joining another lobby.
+        if (NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsClient)
+        {
+            Debug.Log("[Lobby] Shutting down existing Netcode session before joining...");
+            NetworkManager.Singleton.Shutdown();
+        }
+
+        if (currentLobby != CSteamID.Nil)
+        {
+            SteamMatchmaking.LeaveLobby(currentLobby);
+            currentLobby = CSteamID.Nil;
+        }
+
+        Debug.Log($"[Lobby] Joining lobby {lobbyId.m_SteamID}");
+        SteamMatchmaking.JoinLobby(lobbyId); // -> will invoke OnLobbyEntered on success
+        JoinFriendUI.SetActive(false);
+        WaitForStartUI.SetActive(true);
     }
 
     private void OnLobbyCreated(LobbyCreated_t data)

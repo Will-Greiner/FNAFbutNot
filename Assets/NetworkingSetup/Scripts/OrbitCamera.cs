@@ -1,7 +1,7 @@
 using UnityEngine;
-using Unity.Netcode;
 
-public class OrbitCamera : NetworkBehaviour
+[DefaultExecutionOrder(-100)]
+public class OrbitCamera : MonoBehaviour
 {
     [Header("Look")]
     [SerializeField] private Vector2 sensitivity = new Vector2(1000, 1000);
@@ -30,6 +30,9 @@ public class OrbitCamera : NetworkBehaviour
     [Tooltip("Speed when returning back OUT to max distance.")]
     [SerializeField] private float returnSpeed = 8f;
 
+    [Header("Follow")]
+    [SerializeField] private Transform followTarget;
+
     private float currentDistance;
     private Camera cam;
     private AudioListener audioListener;
@@ -45,32 +48,19 @@ public class OrbitCamera : NetworkBehaviour
         audioListener = cameraTransform.GetComponent<AudioListener>();
     }
 
-    public override void OnNetworkSpawn()
+    private void OnEnable()
     {
-        if (!IsOwner)
-            return;
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
-        cam.enabled = IsOwner;
-        audioListener.enabled = IsOwner;
+        if (cam) cam.enabled = true;
+        if (audioListener) audioListener.enabled = true;
     }
 
-    public override void OnNetworkDespawn()
-    {
-        if (IsOwner)
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-    }
+    public void SetFollowTarget(Transform t) => followTarget = t;
+
+    // The controller will use this to read "camera forward" each frame.
+    public Transform ForwardReference => transform;
 
     void Update()
     {
-        if (!IsOwner) 
-            return;
-
         float inputX = Input.GetAxisRaw("Mouse X") * sensitivity.x * Time.deltaTime;
         float inputY = Input.GetAxisRaw("Mouse Y") * sensitivity.y * Time.deltaTime;
         yaw += inputX;
@@ -82,12 +72,14 @@ public class OrbitCamera : NetworkBehaviour
 
     void LateUpdate()
     {
-        if (!IsOwner)
-            return;
         if (!cameraTransform) 
             return;
 
-        Vector3 pivot = transform.position;
+        if (followTarget)
+            transform.position = followTarget.position;
+
+        // Follow the player root without parenting
+        Vector3 pivot = followTarget ? followTarget.position : transform.position;
 
         // Where we WANT the camera (unobstructed)
         Vector3 desiredPos = pivot - transform.forward * maxDistance;

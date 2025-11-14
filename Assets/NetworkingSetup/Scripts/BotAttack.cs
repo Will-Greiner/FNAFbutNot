@@ -57,14 +57,14 @@ public class BotAttack : NetworkBehaviour
 
         for (int i = 0; i < hits; i++)
         {
-            Debug.Log("Atacc");
             var collider = s_overlapCache[i];
+            Debug.Log(collider);
             if (!collider) continue;
 
             // Basic facing/range validation
             Vector3 to = collider.transform.position - originPos;
             if (to.sqrMagnitude > attackRange * attackRange) continue;
-            if (Vector3.Dot(forward.normalized, to.normalized) > 0.2f) continue;
+            //if (Vector3.Dot(forward.normalized, to.normalized) > 0.2f) continue;
 
             if (requireLineOfSight)
             {
@@ -74,11 +74,13 @@ public class BotAttack : NetworkBehaviour
 
             // Find stunstate on target root
             var netObj = collider.GetComponentInParent<NetworkObject>();
+            Debug.Log(netObj);
             if (netObj == null || netObj.NetworkObjectId == NetworkObjectId) continue; // don't hit yourself
 
             var targetStun = netObj.GetComponent<StunState>();
             if (targetStun != null)
             {
+                Debug.Log("Applied stun");
                 targetStun.ApplyStun(stunSeconds);
             }
         }
