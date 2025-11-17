@@ -1,82 +1,122 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// Shows two countdown timers (Stage 1 & Stage 2) in the bot UI,
-/// using the same global time reduction as TimedDoor.
-/// Attach this to a HUD canvas and assign the two Text fields.
+/// Shows a single countdown text "Stage N - MM:SS"
+/// using three stage times and the same global time increase as TimedDoor.
+/// Attach this to a UI prefab and drop that prefab into any player UI.
+/// All instances share the same global timer.
 /// </summary>
 public class DoorCountdownUI : MonoBehaviour
 {
     [Header("UI")]
-    [SerializeField] private TMP_Text stage1Text;
-    [SerializeField] private TMP_Text stage2Text;
+    [SerializeField] private TMP_Text stageTimerText;
 
     [Header("Stage 1 Settings")]
-    [Tooltip("Base delay before Stage 1 doors close. Match this to your Stage 1 TimedDoor baseDelay.")]
+    [Tooltip("Base delay before Stage 1 event. Match this to your Stage 1 TimedDoor baseDelay.")]
     [SerializeField] private float stage1BaseDelay = 30f;
     [SerializeField] private float stage1MinimumDelay = 1f;
 
     [Header("Stage 2 Settings")]
-    [Tooltip("Base delay before Stage 2 doors close. Match this to your Stage 2 TimedDoor baseDelay.")]
+    [Tooltip("Base delay before Stage 2 event.")]
     [SerializeField] private float stage2BaseDelay = 60f;
     [SerializeField] private float stage2MinimumDelay = 1f;
 
-    [Tooltip("Optional: start the timer automatically when this UI enables.")]
+    [Header("Stage 3 Settings")]
+    [Tooltip("Base delay before Stage 3 (end-game) triggers.")]
+    [SerializeField] private float stage3BaseDelay = 90f;
+    [SerializeField] private float stage3MinimumDelay = 1f;
+
+    [Tooltip("Start the timer automatically the first time any instance enables.")]
     [SerializeField] private bool autoStartOnEnable = true;
 
-    private float _startTime;
-    private bool _started;
+    // ---------- GLOBAL SHARED TIMER STATE ----------
+    private static bool s_started = false;
+    private static float s_startTime;
+    private static bool s_stage3Triggered = false;
+
+    /// <summary>
+    /// Call this once when the game starts (e.g. from a GameManager),
+    /// so all UIs share the same start time.
+    /// </summary>
+    public static void StartGlobalCountdown()
+    {
+        if (s_started) return;
+
+        s_started = true;
+        s_startTime = Time.time;
+        s_stage3Triggered = false;
+    }
 
     private void OnEnable()
     {
-        if (autoStartOnEnable)
-            StartCountdown();
-    }
-
-    /// <summary>
-    /// If you want to control when the countdown starts (e.g. from a game manager),
-    /// you can call this method instead of using autoStartOnEnable.
-    /// </summary>
-    public void StartCountdown()
-    {
-        _startTime = Time.time;
-        _started = true;
+        // If you don't start from a GameManager, the first UI instance can start it.
+        if (autoStartOnEnable && !s_started)
+        {
+            StartGlobalCountdown();
+        }
     }
 
     private void Update()
     {
-        if (!_started) return;
+        if (!s_started || stageTimerText == null)
+            return;
 
-        float elapsed = Time.time - _startTime;
-        float globalIncrease = TimedDoor.GlobalTimeIncrease; // from your TimedDoor script
+        float elapsed = Time.time - s_startTime;
+        float globalIncrease = TimedDoor.GlobalTimeIncrease; // shared extra time for all stages
 
-        // Stage 1 effective delay after upgrades
-        float stage1Effective = Mathf.Clamp(
-            stage1BaseDelay + globalIncrease,
-            stage1MinimumDelay,
-            stage1BaseDelay + globalIncrease);
+        // Effective stage times after upgrades
+        float stage1Effective = Mathf.Max(stage1MinimumDelay, stage1BaseDelay + globalIncrease);
+        float stage2Effective = Mathf.Max(stage2MinimumDelay, stage2BaseDelay + globalIncrease);
+        float stage3Effective = Mathf.Max(stage3MinimumDelay, stage3BaseDelay + globalIncrease);
 
-        // Stage 2 effective delay after upgrades
-        float stage2Effective = Mathf.Clamp(
-            stage2BaseDelay + globalIncrease,
-            stage2MinimumDelay,
-            stage2BaseDelay + globalIncrease);
+        int currentStage;
+        float stageEndTime;
+        float stageRemaining;
 
-        float stage1Remaining = Mathf.Max(0f, stage1Effective - elapsed);
-        float stage2Remaining = Mathf.Max(0f, stage2Effective - elapsed);
+        // Determine which stage we're currently in and how much time remains to the next stage boundary
+        if (elapsed < stage1Effective)
+        {
+            currentStage = 1;
+            stageEndTime = stage1Effective;
+        }
+        else if (elapsed < stage2Effective)
+        {
+            currentStage = 2;
+            stageEndTime = stage2Effective;
+        }
+        else if (elapsed < stage3Effective)
+        {
+            currentStage = 3;
+            stageEndTime = stage3Effective;
+        }
+        else
+        {
+            // Past Stage 3: clamp to 0 and treat as "Stage 3 complete"
+            currentStage = 3;
+            stageEndTime = stage3Effective;
+        }
 
-        if (stage1Text)
-            stage1Text.text = FormatTime(stage1Remaining);
+        stageRemaining = Mathf.Max(0f, stageEndTime - elapsed);
 
-        if (stage2Text)
-            stage2Text.text = FormatTime(stage2Remaining);
+        // Update the single text: "Stage N - MM:SS"
+        stageTimerText.text = $"Stage {currentStage} - {FormatTime(stageRemaining)}";
+
+        // When Stage 3 hits zero the first time, trigger end-game once
+        if (!s_stage3Triggered && elapsed >= stage3Effective)
+        {
+            s_stage3Triggered = true;
+
+            if (GuardPrefabSwapper.Instance != null)
+            {
+                // Only actually does work on host/server in your existing implementation
+                GuardPrefabSwapper.Instance.TriggerEndGame();
+            }
+        }
     }
 
     private string FormatTime(float seconds)
     {
-        // Clamp negative and round up so you don't see 0: -1 spikes
         int total = Mathf.CeilToInt(Mathf.Max(0f, seconds));
         int minutes = total / 60;
         int secs = total % 60;

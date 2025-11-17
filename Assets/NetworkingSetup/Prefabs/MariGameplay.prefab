@@ -21,9 +21,10 @@ GameObject:
   - component: {fileID: 8135549134565675163}
   - component: {fileID: 5311004283090878434}
   - component: {fileID: 1847053955267768267}
+  - component: {fileID: -5180070350473181007}
   m_Layer: 6
   m_Name: MariGameplay
-  m_TagString: Untagged
+  m_TagString: Animatronic
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -208,7 +209,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 0.22
   m_Height: 2.2
   m_Direction: 1
   m_Center: {x: 0, y: 1.1, z: 0}
@@ -317,6 +318,19 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   animator: {fileID: 922531159414527562}
+--- !u!114 &-5180070350473181007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 825888122726571102}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 034a699db6fc02a46b1ff984ebae0bc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimatronicRegistration
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &9009526265421854190
 GameObject:
   m_ObjectHideFlags: 0
@@ -374,7 +388,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 34df1ad215ed78a4488724446c61b787, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.075
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 34df1ad215ed78a4488724446c61b787, type: 3}
       propertyPath: m_LocalPosition.z

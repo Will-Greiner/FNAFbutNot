@@ -6,6 +6,7 @@ TagManager:
   tags:
   - CameraArm
   - Bot
+  - Animatronic
   layers:
   - Default
   - TransparentFX

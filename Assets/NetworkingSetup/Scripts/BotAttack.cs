@@ -16,6 +16,8 @@ public class BotAttack : NetworkBehaviour
     [SerializeField] private LayerMask losBlockers;  // walls, props, etc.
 
     private float cooldownLocal;
+    public float AttackCooldown => attackCooldown;
+    public event System.Action LocalAttackFired;
 
     [SerializeField] private Animator animator;
 
@@ -41,6 +43,8 @@ public class BotAttack : NetworkBehaviour
             cooldownLocal = attackCooldown;
 
             TryAttackServerRpc(attackOrigin ? attackOrigin.position : transform.position, attackOrigin ? attackOrigin.forward : transform.forward);
+
+            LocalAttackFired?.Invoke();
         }
     }
 

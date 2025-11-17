@@ -1,41 +1,3 @@
-//using UnityEngine;
-//using Unity.Netcode;
-
-//public class TestMovement : NetworkBehaviour
-//{
-//    [Header("Movement")]
-//    [SerializeField] private float speed = 5;
-//    [SerializeField] private float rotateSpeed = 300;
-
-//    [Header("Refs")]
-//    [SerializeField] private Transform forwardRef;
-
-//    private void Update()
-//    {
-//        float vertical = Input.GetAxisRaw("Vertical");
-//        float horizontal = Input.GetAxisRaw("Horizontal");
-
-//        //if (Mathf.Abs(horizontal) > 0.15f)
-//        //    transform.Rotate(transform.up *  horizontal * 600 * Time.deltaTime);
-
-//        if (Mathf.Abs(vertical) > 0.15f | Mathf.Abs(horizontal) > 0.15f)
-//        {
-//            Vector3 moveDir = forwardRef.right * horizontal + forwardRef.forward * vertical;
-//            moveDir.y = 0;
-//            moveDir.Normalize();
-
-//            transform.Translate(moveDir * speed * Time.deltaTime, Space.World);
-
-//            if (moveDir != Vector3.zero)
-//            {
-//                Quaternion targetRotation = Quaternion.LookRotation(moveDir, Vector3.up);
-
-//                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
-//            }
-//        }
-//    }
-//}
-
 using UnityEngine;
 using Unity.Netcode;
 
@@ -43,37 +5,37 @@ public class ThirdPersonController : NetworkBehaviour
 {
     [Header("Movement")]
     [SerializeField] private float speed = 3f;
-    [SerializeField] private float rotateSpeed = 300f;
+    [SerializeField] private float rotateSpeed = 600f;
 
     [Header("Refs")]
-    [SerializeField] private Transform forwardRef; // camera boom/pivot
-    [SerializeField] private Transform camFollow;
+    [SerializeField] private Transform forwardRef; // camera rig / boom (OrbitCamera transform)
+    [SerializeField] private Transform camFollow;  // pivot on the player the camera orbits
     [SerializeField] private Animator animator;
 
     private Rigidbody rb;
 
-    // Server state
-    Vector3 lastMoveDir = Vector3.zero;
+    // Server-side movement direction (world space, XZ only)
+    private Vector3 lastMoveDir = Vector3.zero;
 
     // Client send throttle
-    private float sendInterval = 1f / 60f; // ~60 Hz input; raise to 1/30f to save bandwidth
+    private float sendInterval = 1f / 60f;
     private float sendTimer = 0f;
 
     private OrbitCamera _localOrbit;
 
-    void Awake()
+    private void Awake()
     {
         rb = GetComponent<Rigidbody>();
 
         // Rigidbody config for character-style motion
-        rb.constraints = RigidbodyConstraints.FreezeRotation;   // prevent physics tipping
-        rb.interpolation = RigidbodyInterpolation.Interpolate;  // smoother visuals
-        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic; // better against fast hits
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
     }
 
     public override void OnNetworkSpawn()
     {
-        // Server simulates; clients are kinematic followers of NetworkTransform (server authority)
+        // Server simulates; clients are kinematic followers (via NetworkTransform)
         rb.isKinematic = !IsServer;
 
         if (IsOwner)
@@ -83,15 +45,20 @@ public class ThirdPersonController : NetworkBehaviour
             Cursor.visible = false;
         }
 
-        // Only server should drive Animator state; clients just receive via NetworkAnimator
+        // Server drives Animator; clients get it via NetworkAnimator
         if (!IsServer && animator) animator.applyRootMotion = false;
     }
+
     public override void OnNetworkDespawn()
     {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        if (IsOwner)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
     }
 
+    // Finds the local OrbitCamera at runtime and wires follow + forwardRef
     private void BindLocalCameraRig()
     {
         if (_localOrbit == null)
@@ -99,49 +66,59 @@ public class ThirdPersonController : NetworkBehaviour
 
         if (_localOrbit != null)
         {
-            // Always set (or re-set) the follow target
-            _localOrbit.SetFollowTarget(camFollow);
+            // Ensure camera rig is following THIS player
+            if (camFollow != null)
+                _localOrbit.SetFollowTarget(camFollow);
 
-            // Only set forwardRef if we don't already have one.
-            if (forwardRef == null)
-                forwardRef = _localOrbit.ForwardReference;
+            // Movement forward reference = camera rig transform
+            forwardRef = _localOrbit.ForwardReference;
         }
         else if (forwardRef == null && Camera.main != null)
         {
-            // Fallback: still drive movement even if the rig isn't found yet.
+            // Fallback: still move relative to main camera if rig isn't found yet
             forwardRef = Camera.main.transform;
         }
     }
 
-    void Update()
+    private void Update()
     {
-        if (!IsOwner) return; // NGO: only the local owner drives input
+        if (!IsOwner || GameOverUIController.IsGameOver)
+            return;
 
         BindLocalCameraRig();
 
-        float vertical = Input.GetAxisRaw("Vertical");
-        float horizontal = Input.GetAxisRaw("Horizontal");
+        // --- Read input on the local client ---
+        float vertical = Input.GetAxisRaw("Vertical");   // W/S
+        float horizontal = Input.GetAxisRaw("Horizontal"); // A/D
 
-        Vector3 moveDir;
+        // --- Build camera-aligned movement vector in world space ---
+        Vector3 moveDir = Vector3.zero;
 
-        // Camera-aligned input
-        Vector3 fwd = forwardRef.forward; 
-        fwd.y = 0f; 
-        fwd.Normalize();
-        Vector3 right = forwardRef.right; 
-        right.y = 0f; 
-        right.Normalize();
-        moveDir = right * horizontal + fwd * vertical;
+        if (forwardRef != null)
+        {
+            // Camera rig forward/right flattened on XZ
+            Vector3 fwd = forwardRef.forward;
+            fwd.y = 0f;
+            fwd.Normalize();
 
-        // Clamp diagonals and tiny drift
-        if (moveDir.sqrMagnitude > 1)
+            Vector3 right = forwardRef.right;
+            right.y = 0f;
+            right.Normalize();
+
+            // WASD relative to camera rig
+            moveDir = right * horizontal + fwd * vertical;
+        }
+
+        // Clamp diagonals
+        if (moveDir.sqrMagnitude > 1f)
             moveDir.Normalize();
 
-        // Send to server at a reasonable rate
+        // Throttle input sends to the server
         sendTimer += Time.deltaTime;
         if (sendTimer >= sendInterval)
         {
             sendTimer = 0f;
+            // Send world-space XZ components to server
             SendInputServerRpc(new Vector2(moveDir.x, moveDir.z));
         }
     }
@@ -149,30 +126,42 @@ public class ThirdPersonController : NetworkBehaviour
     [ServerRpc]
     private void SendInputServerRpc(Vector2 moveXZ)
     {
-        var w = new Vector3(moveXZ.x, 0, moveXZ.y);
-        if (w.sqrMagnitude > 1)
+        // Rebuild world-space vector on the server
+        Vector3 w = new Vector3(moveXZ.x, 0f, moveXZ.y);
+
+        if (w.sqrMagnitude > 1f)
             w.Normalize();
+
         lastMoveDir = w;
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
-        if (!IsServer) return;
+        if (!IsServer || GameOverUIController.IsGameOver)
+            return;
 
         // --- Move with physics on the server ---
-
-        Vector3 delta = lastMoveDir.sqrMagnitude > 1e-4f ? lastMoveDir * (speed * Time.fixedDeltaTime) : Vector3.zero;
+        Vector3 delta = lastMoveDir.sqrMagnitude > 1e-4f
+            ? lastMoveDir * (speed * Time.fixedDeltaTime)
+            : Vector3.zero;
 
         rb.MovePosition(rb.position + delta);
 
-        // --- Face movement direction ---
+        // --- Rotate to face movement direction ---
         if (lastMoveDir.sqrMagnitude > 1e-6f)
         {
             Quaternion targetRot = Quaternion.LookRotation(lastMoveDir, Vector3.up);
-            rb.MoveRotation(Quaternion.RotateTowards(rb.rotation, targetRot, rotateSpeed * Time.fixedDeltaTime));
+            Quaternion newRot = Quaternion.RotateTowards(
+                rb.rotation,
+                targetRot,
+                rotateSpeed * Time.fixedDeltaTime);
+
+            rb.MoveRotation(newRot);
         }
 
+        // --- Animator flag ---
         bool isMoving = lastMoveDir.sqrMagnitude > 1e-4f;
-        animator.SetBool("isMoving", isMoving);
+        if (animator != null)
+            animator.SetBool("isMoving", isMoving);
     }
 }

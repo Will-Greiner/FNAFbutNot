@@ -15,8 +15,12 @@ public class FPMovement : NetworkBehaviour
     [SerializeField] private float maxVelocity = 6;
 
     private Rigidbody playerRigidbody;
+    [SerializeField] private Animator animator;
+    [SerializeField] private Shotgun shotgunScript;
+    [SerializeField] private GameObject shotgunPrefab;
 
-    public bool hasShotgun = false;
+    public bool isEndGame = false;
+    public bool showGun = false;
 
     // local client look state
     private float xRotation; // pitch
@@ -68,6 +72,8 @@ public class FPMovement : NetworkBehaviour
             if (cameraTransform != null)
                 cameraTransform.gameObject.SetActive(false);
         }
+
+        if (!IsServer && animator) animator.applyRootMotion = false;
     }
 
     public override void OnNetworkDespawn()
@@ -78,8 +84,18 @@ public class FPMovement : NetworkBehaviour
 
     private void Update()
     {
-        if (!IsOwner || !hasShotgun)
+        if (!IsOwner || !isEndGame || GameOverUIController.IsGameOver)
             return;
+
+        if (isEndGame)
+        {
+            if (showGun)
+            {
+                shotgunPrefab.SetActive(true);
+                shotgunScript.enabled = true;
+            }
+            animator.SetBool("hasGun", true);
+        }
 
         // Client look
         float mouseX = Input.GetAxisRaw("Mouse X") * Time.deltaTime * sensitivity.x;
@@ -105,6 +121,9 @@ public class FPMovement : NetworkBehaviour
             pitch = xRotation
         };
 
+        if (isEndGame)
+            LockCursor(true);
+
         // Client sends RPC
         if (IsServer)
         {
@@ -121,6 +140,13 @@ public class FPMovement : NetworkBehaviour
         if (!IsServer) // Server-authoritative physics only
             return;
 
+        if (GameOverUIController.IsGameOver)
+        {
+            // Hard stop
+            playerRigidbody.linearVelocity = Vector3.zero;
+            return;
+        }
+
         // Apply authoritative yaw to body
         transform.rotation = Quaternion.Euler(0, lastInput.yaw, 0);
 
@@ -128,10 +154,16 @@ public class FPMovement : NetworkBehaviour
         if (moveDir.sqrMagnitude > 1e-4f)
             moveDir.Normalize();
 
-        if (moveDir.sqrMagnitude > 0 && hasShotgun)
+        if (moveDir.sqrMagnitude > 0 && isEndGame)
+        {
             playerRigidbody.AddForce(moveDir * acceleration, ForceMode.Acceleration);
+            animator.SetBool("isMoving", true);
+        }
         else
+        {
             playerRigidbody.linearVelocity = Vector3.zero;
+            animator.SetBool("isMoving", false);
+        }
 
         // Clamp horizontal speed
         Vector3 velocity = playerRigidbody.linearVelocity;

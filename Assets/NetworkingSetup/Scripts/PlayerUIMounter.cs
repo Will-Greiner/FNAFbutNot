@@ -57,6 +57,8 @@ public class PlayerUIMounter : NetworkBehaviour
 
         AttachCanvasCameraIfAny(_spawnedUiInstance);
         EnsureEventSystemExists();
+
+        WireAttackCooldownUI();
     }
 
     public override void OnNetworkDespawn()
@@ -124,4 +126,47 @@ public class PlayerUIMounter : NetworkBehaviour
             DontDestroyOnLoad(es);
         }
     }
+
+    private void WireAttackCooldownUI()
+    {
+        if (_spawnedUiInstance == null) return;
+
+        // Find any AttackCooldownUI components inside the spawned UI hierarchy
+        var cooldownUIs = _spawnedUiInstance.GetComponentsInChildren<AttackCooldownUI>(true);
+        if (cooldownUIs == null || cooldownUIs.Length == 0)
+            return;
+
+        // Find the attack script on THIS player
+        // (PlayerUIMounter is on the same player / character object)
+        MonoBehaviour attackSource = null;
+
+        // Try AnimatronicAttack first
+        var animAttack = GetComponentInChildren<AnimatronicAttack>(true);
+        if (animAttack != null)
+        {
+            attackSource = animAttack;
+        }
+        else
+        {
+            // Fall back to BotAttack
+            var botAttack = GetComponentInChildren<BotAttack>(true);
+            if (botAttack != null)
+            {
+                attackSource = botAttack;
+            }
+        }
+
+        if (attackSource == null)
+        {
+            Debug.LogWarning($"PlayerUIMounter: No AnimatronicAttack/BotAttack found on player {OwnerClientId} for cooldown UI.");
+            return;
+        }
+
+        // Initialize all cooldown UI instances with this attack source
+        foreach (var ui in cooldownUIs)
+        {
+            ui.InitializeFromAttack(attackSource);
+        }
+    }
+
 }

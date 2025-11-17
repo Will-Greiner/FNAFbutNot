@@ -1,5 +1,6 @@
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BotHealth : NetworkBehaviour
 {
@@ -9,17 +10,60 @@ public class BotHealth : NetworkBehaviour
     [Tooltip("Min time (seconds) between damage applications to this bot.")]
     [SerializeField] private float damageCooldown = 2;
 
+    [SerializeField] private Image healthbar;
+
     // Server-only replicated number of hits remaining (handy for UI if needed)
     public readonly NetworkVariable<int> RemainingHits = new(writePerm: NetworkVariableWritePermission.Server);
 
     private double nextAllowedDamageTime;
+    private int maxHits;
 
     public override void OnNetworkSpawn()
     {
+        maxHits = hitsToDestroy;
+
+        RemainingHits.OnValueChanged += OnRemainingHitsChanged;
+
         if (!IsServer) return;
 
         RemainingHits.Value = hitsToDestroy;
         nextAllowedDamageTime = 0;
+
+        UpdateHealthUI();
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        RemainingHits.OnValueChanged -= OnRemainingHitsChanged;
+    }
+
+    public void AttachHealthSlider(Image healthbar)
+    {
+        this.healthbar = healthbar;
+
+        UpdateHealthUI();
+    }
+
+    private void OnRemainingHitsChanged(int oldValue, int newValue)
+    {
+        UpdateHealthUI();
+    }
+
+    private void UpdateHealthUI()
+    {
+        if (!healthbar)
+            return;
+
+        float normalized = maxHits > 0 ? (float)RemainingHits.Value / maxHits : 0;
+
+        healthbar.fillAmount = normalized;
+    }
+
+    public void ResetHealthUI()
+    {
+        if (!healthbar) return;
+
+        healthbar.fillAmount = 1f;
     }
 
     /// Called on the SERVER when someone successfully hits this bot.

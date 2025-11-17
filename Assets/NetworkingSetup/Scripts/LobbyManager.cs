@@ -148,6 +148,36 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
+    public void CloseLobby()
+    {
+        // 1) Stop Netcode (host or client)
+        if (NetworkManager.Singleton != null &&
+            (NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsClient))
+        {
+            Debug.Log("[Lobby] Shutting down Netcode session...");
+            NetworkManager.Singleton.Shutdown();
+        }
+
+        // 2) Leave the Steam lobby (this destroys it when the last person leaves)
+        if (currentLobby != CSteamID.Nil)
+        {
+            // If we're the owner, optionally make it non-joinable before leaving
+            if (SteamMatchmaking.GetLobbyOwner(currentLobby) == SteamUser.GetSteamID())
+            {
+                SteamMatchmaking.SetLobbyJoinable(currentLobby, false);
+            }
+
+            Debug.Log($"[Lobby] Leaving lobby {currentLobby.m_SteamID}");
+            SteamMatchmaking.LeaveLobby(currentLobby);
+            currentLobby = CSteamID.Nil;
+        }
+
+        // 3) Reset any lobby-specific UI
+        if (WaitForStartUI != null)
+            WaitForStartUI.SetActive(false);
+    }
+
+
     private void OnLobbyInvite(GameLobbyJoinRequested_t data)
     {
         //Handles Steam overlay "Join Game" invites -> triggers OnLobbyEntered on this client
