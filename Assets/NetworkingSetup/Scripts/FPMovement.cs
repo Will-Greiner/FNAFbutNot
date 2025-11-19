@@ -91,10 +91,15 @@ public class FPMovement : NetworkBehaviour
         {
             if (showGun)
             {
-                shotgunPrefab.SetActive(true);
-                shotgunScript.enabled = true;
+                if (shotgunPrefab != null && !shotgunPrefab.activeSelf)
+                    shotgunPrefab.SetActive(true);
+
+                if (shotgunScript != null && !shotgunScript.enabled)
+                    shotgunScript.enabled = true;
             }
-            animator.SetBool("hasGun", true);
+
+            if (animator != null)
+                animator.SetBool("hasGun", showGun);
         }
 
         // Client look
@@ -112,6 +117,12 @@ public class FPMovement : NetworkBehaviour
         // Client move input
         float inputX = Input.GetAxisRaw("Horizontal");
         float inputZ = Input.GetAxisRaw("Vertical");
+
+        if (shotgunScript != null && shotgunScript.IsAttacking)
+        {
+            inputX = 0;
+            inputZ = 0;
+        }
 
         var input = new InputState
         { 
@@ -192,5 +203,12 @@ public class FPMovement : NetworkBehaviour
     {
         Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !locked;
+    }
+
+    [ClientRpc]
+    public void EnableShotgunClientRpc()
+    {
+        // This runs on every client for this guard’s FPMovement
+        showGun = true;
     }
 }

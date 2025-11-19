@@ -26,6 +26,7 @@ public class GuardPrefabSwapper : NetworkBehaviour
     public ulong HostClientId => NetworkManager.Singleton.LocalClientId;
 
     private bool endGameTriggered = false;
+    private bool botsDepletedGameOverTriggered = false;
 
     private void Awake()
     {
@@ -35,6 +36,16 @@ public class GuardPrefabSwapper : NetworkBehaviour
             return;
         }
         Instance = this;
+    }
+
+    private bool AnySpawnAvailable()                  
+    {
+        for (int i = 0; i < botSpawnPoints.Count; i++)
+        {
+            if (IsSpawnAvailable(i))
+                return true;
+        }
+        return false;
     }
 
     public void RegisterGuardUIParents(GameObject normalParent, GameObject endGameParent)
@@ -57,8 +68,8 @@ public class GuardPrefabSwapper : NetworkBehaviour
 
     private void Update()
     {
-        if (IsServer && Input.GetButtonDown("Jump"))
-            RespawnHostToOriginal();
+        //if (IsServer && Input.GetButtonDown("Jump"))
+        //    RespawnHostToOriginal();
     }
 
     public bool IsSpawnAvailable(int spawnIndex)
@@ -122,6 +133,12 @@ public class GuardPrefabSwapper : NetworkBehaviour
         }
 
         RespawnHostToOriginal();
+
+        if (!botsDepletedGameOverTriggered && !AnySpawnAvailable())
+        {
+            botsDepletedGameOverTriggered = true;
+            TriggerBotsDepletedGameOver();
+        }
     }
 
     public void TriggerEndGame()
@@ -137,22 +154,33 @@ public class GuardPrefabSwapper : NetworkBehaviour
         // Ensure host is in guard form
         RespawnHostToOriginal();
 
-        if (shotgunPrefab != null && shotgunSpawnPoint != null)
-        {
-            GameObject go = Instantiate(shotgunPrefab,
-                                        shotgunSpawnPoint.position,
-                                        shotgunSpawnPoint.rotation);
-
-            var no = go.GetComponent<NetworkObject>();
-            if (no != null)
-                no.Spawn();  // networked so everyone sees it
-        }
+        GiveGuardShotgun();
 
         // Switch UIs on all clients
         SetEndGameUIClientRpc();
 
         // Enable end-game movement on the guard's FPMovement
         EnableEndGameMovementOnGuard();
+    }
+
+    private void GiveGuardShotgun()
+    {
+        if (!IsServer)
+            return;
+
+        if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(HostClientId, out var conn) ||
+            conn.PlayerObject == null)
+        {
+            Debug.LogWarning("GuardPrefabSwapper: Host PlayerObject not found when giving shotgun.");
+            return;
+        }
+
+        var fpm = conn.PlayerObject.GetComponent<FPMovement>();
+        if (fpm != null)
+        {
+            // Ensure endgame state is active however you already do it, then:
+            fpm.EnableShotgunClientRpc();
+        }
     }
 
     private void EnableEndGameMovementOnGuard()
@@ -167,6 +195,25 @@ public class GuardPrefabSwapper : NetworkBehaviour
         if (fp != null)
         {
             fp.isEndGame = true;
+        }
+    }
+
+    private void TriggerBotsDepletedGameOver()
+    {
+        // Only the server/host should call this
+        if (!IsServer)
+            return;
+
+        ShowGameOverClientRpc();
+    }
+
+    [ClientRpc]
+    private void ShowGameOverClientRpc()
+    {
+        // Show the GameOver UI on every client
+        if (GameOverUIController.Instance != null)
+        {
+            GameOverUIController.Instance.ShowGameOver();
         }
     }
 

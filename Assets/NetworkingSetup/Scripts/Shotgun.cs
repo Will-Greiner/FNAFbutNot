@@ -20,6 +20,10 @@ public class Shotgun : NetworkBehaviour
     public float AttackCooldown => attackCooldown;
     public event System.Action LocalAttackFired;
 
+    // used by movement to lock input
+    private bool isAttacking;
+    public bool IsAttacking => isAttacking;
+
     private static readonly Collider[] s_overlapCache = new Collider[16];
 
     private void Reset()
@@ -29,7 +33,8 @@ public class Shotgun : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        if (!IsServer && animator) animator.applyRootMotion = false;
+        if (!IsServer && animator)
+            animator.applyRootMotion = false;
     }
 
     private void Update()
@@ -39,16 +44,43 @@ public class Shotgun : NetworkBehaviour
 
         cooldownLocal -= Time.deltaTime;
 
-        if (Input.GetButtonDown("Fire1") && cooldownLocal <= 0f)
+        // start attack on button press; actual hit comes from animation event
+        if (Input.GetButtonDown("Fire1") && cooldownLocal <= 0f && !isAttacking)
         {
             cooldownLocal = attackCooldown;
+            isAttacking = true;
+            LocalAttackFired?.Invoke(); // for cooldown UI
 
-            Vector3 originPos = attackOrigin ? attackOrigin.position : transform.position;
-            Vector3 forward = attackOrigin ? attackOrigin.forward : transform.forward;
-
-            TryShotgunServerRpc(originPos, forward);
-            LocalAttackFired?.Invoke();
+            // play the attack animation on all clients
+            PlayShotgunFxClientRpc();
         }
+    }
+
+    /// <summary>
+    /// Called from an animation event at the moment of the muzzle flash / hit.
+    /// Animation clip event name should be "AnimationAttackHit".
+    /// </summary>
+    public void AnimationAttackHit()
+    {
+        if (!IsOwner)
+            return;
+
+        Vector3 originPos = attackOrigin ? attackOrigin.position : transform.position;
+        Vector3 forward = attackOrigin ? attackOrigin.forward : transform.forward;
+
+        TryShotgunServerRpc(originPos, forward);
+    }
+
+    /// <summary>
+    /// Called from an animation event at the end of the attack animation.
+    /// Animation clip event name should be "AnimationAttackEnd".
+    /// </summary>
+    public void AnimationAttackEnd()
+    {
+        if (!IsOwner)
+            return;
+
+        isAttacking = false;
     }
 
     [ServerRpc]
@@ -88,7 +120,7 @@ public class Shotgun : NetworkBehaviour
                 continue;
 
             // Only handle animatronic players
-            if (!netObj.CompareTag("Animatronic")) // or use a component check if you prefer
+            if (!netObj.CompareTag("Animatronic"))
                 continue;
 
             // Let the manager handle despawn, camera cycling, and gameover checks
@@ -100,8 +132,6 @@ public class Shotgun : NetworkBehaviour
             // Shotgun: stop after first animatronic hit
             break;
         }
-
-        PlayShotgunFxClientRpc();
     }
 
     [ClientRpc]

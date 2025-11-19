@@ -15,6 +15,7 @@ public class FPMovementBot : NetworkBehaviour
     [SerializeField] private float maxVelocity = 6;
 
     private Rigidbody playerRigidbody;
+    private BotAttack botAttack;
 
     // local client look state
     private float xRotation; // pitch
@@ -44,6 +45,8 @@ public class FPMovementBot : NetworkBehaviour
     {
         playerRigidbody = GetComponent<Rigidbody>();
         playerRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+
+        botAttack = GetComponent<BotAttack>();
     }
 
     public override void OnNetworkSpawn()
@@ -94,6 +97,12 @@ public class FPMovementBot : NetworkBehaviour
         // Client move input
         float inputX = Input.GetAxisRaw("Horizontal");
         float inputZ = Input.GetAxisRaw("Vertical");
+
+        if (botAttack != null && botAttack.IsAttacking)
+        {
+            inputX = 0;
+            inputZ = 0;
+        }
 
         var input = new InputState
         { 

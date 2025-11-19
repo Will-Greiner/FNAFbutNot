@@ -13,6 +13,9 @@ public class ThirdPersonController : NetworkBehaviour
     [SerializeField] private Animator animator;
 
     private Rigidbody rb;
+    private OrbitCamera _localOrbit;
+    AnimatronicAttack animAttack;
+    private StunState stunState;
 
     // Server-side movement direction (world space, XZ only)
     private Vector3 lastMoveDir = Vector3.zero;
@@ -20,8 +23,6 @@ public class ThirdPersonController : NetworkBehaviour
     // Client send throttle
     private float sendInterval = 1f / 60f;
     private float sendTimer = 0f;
-
-    private OrbitCamera _localOrbit;
 
     private void Awake()
     {
@@ -31,6 +32,9 @@ public class ThirdPersonController : NetworkBehaviour
         rb.constraints = RigidbodyConstraints.FreezeRotation;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+
+        animAttack = GetComponent<AnimatronicAttack>();
+        stunState = GetComponent<StunState>();
     }
 
     public override void OnNetworkSpawn()
@@ -47,6 +51,11 @@ public class ThirdPersonController : NetworkBehaviour
 
         // Server drives Animator; clients get it via NetworkAnimator
         if (!IsServer && animator) animator.applyRootMotion = false;
+
+        if (stunState != null)
+        {
+            stunState.StunStarted += OnStunStarted;
+        }
     }
 
     public override void OnNetworkDespawn()
@@ -55,6 +64,26 @@ public class ThirdPersonController : NetworkBehaviour
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+        }
+
+        if (stunState != null)
+        {
+            stunState.StunStarted -= OnStunStarted;
+        }
+    }
+
+    private void OnStunStarted()
+    {
+        if (IsServer)
+        {
+            lastMoveDir = Vector3.zero;
+
+            if (rb != null && !rb.isKinematic)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.Sleep();
+            }
         }
     }
 
@@ -90,6 +119,18 @@ public class ThirdPersonController : NetworkBehaviour
         // --- Read input on the local client ---
         float vertical = Input.GetAxisRaw("Vertical");   // W/S
         float horizontal = Input.GetAxisRaw("Horizontal"); // A/D
+
+        if (animAttack != null && animAttack.IsAttacking)
+        {
+            vertical = 0;
+            horizontal = 0;
+        }
+
+        if (stunState != null && stunState.IsStunned.Value)
+        {
+            vertical = 0;
+            horizontal = 0;
+        }
 
         // --- Build camera-aligned movement vector in world space ---
         Vector3 moveDir = Vector3.zero;

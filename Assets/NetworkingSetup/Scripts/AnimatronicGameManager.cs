@@ -89,6 +89,7 @@ public class AnimatronicGameManager : NetworkBehaviour
         if (targetRef.TryGet(out NetworkObject targetNO))
         {
             SpectatorCameraController.Instance.SetTarget(targetNO.transform);
+            SpectatorCameraController.Instance.SpawnAndAttachUI();
         }
     }
 

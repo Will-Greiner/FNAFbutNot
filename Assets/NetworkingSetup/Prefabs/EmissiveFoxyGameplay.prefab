@@ -444,6 +444,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f112f33afe68c444b821928a8c77efec, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4901122499077052001}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f112f33afe68c444b821928a8c77efec, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4177829390942882860}
   m_SourcePrefab: {fileID: 100100000, guid: f112f33afe68c444b821928a8c77efec, type: 3}
 --- !u!4 &3780135676770488044 stripped
 Transform:
@@ -477,3 +480,16 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &4177829390942882860
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4557200759667545174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c1f60fb74aaee543a1fbe3294e86e3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimatronicAttackAnimationRelay
+  attack: {fileID: 1847053955267768267}

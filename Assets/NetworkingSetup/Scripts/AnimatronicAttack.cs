@@ -21,6 +21,9 @@ public class AnimatronicAttack : NetworkBehaviour
 
     [SerializeField] private Animator animator;
 
+    private bool isAttacking;
+    public bool IsAttacking => isAttacking;
+
     private void Reset()
     {
         attackOrigin = transform; // fallback
@@ -38,24 +41,37 @@ public class AnimatronicAttack : NetworkBehaviour
 
         cooldownLocal -= Time.deltaTime;
 
-        if (Input.GetButtonDown("Fire1") && cooldownLocal <= 0f)
+        if (Input.GetButtonDown("Fire1") && cooldownLocal <= 0f && !isAttacking)
         {
             cooldownLocal = attackCooldown;
-
-            TryAttackServerRpc(attackOrigin ? attackOrigin.position : transform.position, attackOrigin ? attackOrigin.forward : transform.forward);
-
+            isAttacking = true;
             LocalAttackFired?.Invoke();
+
+            RequestAttackFxServerRpc();
         }
+    }
+
+    public void AnimationAttackHit()
+    {
+        if (!IsOwner) return;
+
+        Vector3 originPos = attackOrigin ? attackOrigin.position : transform.position;
+        Vector3 forward = attackOrigin ? attackOrigin.forward : transform.forward;
+
+        TryAttackServerRpc(originPos, forward);
+    }
+
+    public void AnimationAttackEnd()
+    {
+        if (!IsOwner)
+            return;
+
+        isAttacking = false;
     }
 
     [ServerRpc]
     private void TryAttackServerRpc(Vector3 originPos, Vector3 forward)
     {
-        // cooldown per-attacker (server-trusted)
-        if (!CanServerAttack()) 
-            return;
-        SetServerCooldown();
-
         // Overlap sphere in a small capsule/cone in front of attacker
         int hits = Physics.OverlapSphereNonAlloc(originPos + forward.normalized * attackRange * 0.6f, attackRadius, s_overlapCache, hittableLayers, QueryTriggerInteraction.Collide);
 
@@ -78,7 +94,6 @@ public class AnimatronicAttack : NetworkBehaviour
 
             // Find stunstate on target root
             var netObj = collider.GetComponentInParent<NetworkObject>();
-            Debug.Log(netObj);
             if (netObj == null || netObj.NetworkObjectId == NetworkObjectId) continue; // don't hit yourself
 
             // If it has bot health, apply hit (3 hits -> destroy & respawn)
@@ -88,8 +103,22 @@ public class AnimatronicAttack : NetworkBehaviour
                 botHealth.ApplyHit(OwnerClientId);
             }
         }
+    }
 
-        // Optional: tell clients to play swing SFX/anim
+    [ServerRpc]
+    private void RequestAttackFxServerRpc(ServerRpcParams rpcParams = default)
+    {
+        // Optional safety: only allow the owner to request
+        if (rpcParams.Receive.SenderClientId != OwnerClientId)
+            return;
+
+        // Server-side cooldown gate (one attack per AttackCooldown)
+        if (!CanServerAttack())
+            return;
+
+        SetServerCooldown();
+
+        // Now actually trigger the animation on all clients
         PlayAttackFxClientRpc();
     }
 

@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 7677606126412145341}
   - component: {fileID: 6308372163392951480}
   - component: {fileID: 1412895605179166253}
+  - component: {fileID: 2281183684880672549}
   m_Layer: 6
   m_Name: SecurityBotGameplay
   m_TagString: Bot
@@ -308,6 +309,23 @@ MonoBehaviour:
     TriggerNameHash: 1203776827
     TransitionIndex: 1
   m_Animator: {fileID: 3116254218253162319}
+--- !u!114 &2281183684880672549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 825888122726571102}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0fc004bbb04d284daba6856ccd6b8c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GuardHealth
+  ShowTopMostFoldoutHeaderGroup: 1
+  hitsToDestroy: 1
+  damageCooldown: 2
+  healthbar: {fileID: 0}
+  triggerGameOverOnDeath: 1
 --- !u!1 &3467670535252038269
 GameObject:
   m_ObjectHideFlags: 0
@@ -1134,6 +1152,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 35c56567276bcc5489bc3d74a1e38d10, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3116254218253162319}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 35c56567276bcc5489bc3d74a1e38d10, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4293290170263634774}
   m_SourcePrefab: {fileID: 100100000, guid: 35c56567276bcc5489bc3d74a1e38d10, type: 3}
 --- !u!4 &1953211688604192288 stripped
 Transform:
@@ -1167,6 +1188,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &4293290170263634774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5061045379140781593}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a0f2d96b2c4609428981fa378a9d999, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShotgunAttackAnimationRelay
+  attack: {fileID: 6308372163392951480}
 --- !u!4 &5582107669816269987 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 35c56567276bcc5489bc3d74a1e38d10, type: 3}
