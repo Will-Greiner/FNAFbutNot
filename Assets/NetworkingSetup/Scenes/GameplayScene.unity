@@ -28256,7 +28256,7 @@ MonoBehaviour:
   - {fileID: 739007336}
   hostGameplayPrefab: {fileID: 5801228738945456815, guid: d0b7bc4b68216ce42adfe9d6843429e5, type: 3}
   animatronicGameplayPrefabs:
-  - {fileID: 5801228738945456815, guid: 6d32143bd679fd94fbf0f5bc87519a15, type: 3}
+  - {fileID: 5801228738945456815, guid: e1ad67f8ca72b7542a6e16ca9684ac41, type: 3}
   - {fileID: 5801228738945456815, guid: 38a3e2a12d2cd954091c025afee66268, type: 3}
   - {fileID: 5801228738945456815, guid: f386a99db7a024b439e7b66313e7a41e, type: 3}
   - {fileID: 5801228738945456815, guid: d38779fd4f5420f41ab701d0a8195067, type: 3}
