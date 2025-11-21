@@ -147,7 +147,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPMovement
   ShowTopMostFoldoutHeaderGroup: 1
-  sensitivity: {x: 800, y: 800}
+  sensitivity: {x: 200, y: 200}
   cameraTransform: {fileID: 3888146883841664558}
   minPitch: -90
   maxPitch: 90
@@ -11429,6 +11429,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 6001245439959450752}
     m_Modifications:
+    - target: {fileID: 286835396370330177, guid: 5c2346729d600574eb2e281d24f25461, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 3905623455
+      objectReference: {fileID: 0}
     - target: {fileID: 3494843360851243244, guid: 5c2346729d600574eb2e281d24f25461, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.0598
