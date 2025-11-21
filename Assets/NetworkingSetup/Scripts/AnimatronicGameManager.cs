@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -7,6 +8,8 @@ public class AnimatronicGameManager : NetworkBehaviour
     public static AnimatronicGameManager Instance { get; private set; }
 
     private readonly List<NetworkObject> _aliveAnimatronics = new();
+
+    [SerializeField] private GameObject animatronicDeathFxPrefab;
 
     private void Awake()
     {
@@ -32,6 +35,15 @@ public class AnimatronicGameManager : NetworkBehaviour
         _aliveAnimatronics.Remove(no);
     }
 
+    [ClientRpc]
+    private void PlayDeathFxClientRpc(Vector3 position)
+    {
+        if (animatronicDeathFxPrefab == null)
+            return;
+
+        Instantiate(animatronicDeathFxPrefab, position, Quaternion.identity);
+    }
+
     /// <summary>
     /// Called by ShotgunAttack on the SERVER when an animatronic is shot.
     /// Handles despawn, camera cycling, and gameover.
@@ -39,6 +51,10 @@ public class AnimatronicGameManager : NetworkBehaviour
     public void KillAnimatronic(NetworkObject animNO)
     {
         if (!IsServer || animNO == null) return;
+
+        Vector3 deathPos = animNO.transform.position;
+
+        PlayDeathFxClientRpc(deathPos);
 
         // Determine index before removal
         int index = _aliveAnimatronics.IndexOf(animNO);
@@ -90,15 +106,29 @@ public class AnimatronicGameManager : NetworkBehaviour
         {
             SpectatorCameraController.Instance.SetTarget(targetNO.transform);
             SpectatorCameraController.Instance.SpawnAndAttachUI();
+            SpectatorCameraController.Instance.ShowSpectatorUI(true);
         }
     }
 
     [ClientRpc]
     private void GameOverClientRpc()
     {
-        if (GameOverUIController.Instance != null)
+        //if (GameOverUIController.Instance != null)
+        //{
+        //    GameOverUIController.Instance.ShowGameOver();
+        //}
+
+        //if (SceneMusicPlayer.Instance != null)
+        //{
+        //    SceneMusicPlayer.Instance.PlayEndGameMusic();
+        //}
+
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsClient)
         {
-            GameOverUIController.Instance.ShowGameOver();
+            NetworkManager.Singleton.Shutdown();
         }
+
+        // Load the next scene (everyone runs this because it's a ClientRpc)
+        SceneManager.LoadScene("GameOver");
     }
 }

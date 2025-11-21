@@ -39,8 +39,6 @@ public class FPCameraFollowTransform : MonoBehaviour
         // Match position to head, ignore head rotation
         cameraRig.position = followTransform.position + followTransform.TransformVector(offsetToUse);
 
-        Debug.Log(offsetToUse);
-
         // Rotation should come from your look script, NOT the head animation,
         // so we do NOT copy followTransform.rotation here.
     }

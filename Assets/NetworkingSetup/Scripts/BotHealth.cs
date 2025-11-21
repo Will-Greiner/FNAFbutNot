@@ -1,4 +1,4 @@
-using Unity.Netcode;
+﻿using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,8 +12,18 @@ public class BotHealth : NetworkBehaviour
 
     [SerializeField] private Image healthbar;
 
-    // Server-only replicated number of hits remaining (handy for UI if needed)
-    public readonly NetworkVariable<int> RemainingHits = new(writePerm: NetworkVariableWritePermission.Server);
+    [Header("Hit FX")]
+    [Tooltip("AudioSource on the bot used for hit sounds.")]
+    [SerializeField] private AudioSource hitAudioSource;
+    [SerializeField] private AudioClip hitClip;
+
+    [Header("Death FX")]
+    [Tooltip("Prefab with particle system + audio for death. Will be spawned at the bot's position on all clients.")]
+    [SerializeField] private GameObject deathFxPrefab;
+
+    // Server-only replicated number of hits remaining
+    public readonly NetworkVariable<int> RemainingHits =
+        new(writePerm: NetworkVariableWritePermission.Server);
 
     private double nextAllowedDamageTime;
     private int maxHits;
@@ -23,6 +33,12 @@ public class BotHealth : NetworkBehaviour
         maxHits = hitsToDestroy;
 
         RemainingHits.OnValueChanged += OnRemainingHitsChanged;
+
+        // Optional auto-wiring of the hit audio source
+        if (hitAudioSource == null)
+        {
+            hitAudioSource = GetComponentInChildren<AudioSource>(true);
+        }
 
         if (!IsServer) return;
 
@@ -40,7 +56,6 @@ public class BotHealth : NetworkBehaviour
     public void AttachHealthSlider(Image healthbar)
     {
         this.healthbar = healthbar;
-
         UpdateHealthUI();
     }
 
@@ -55,14 +70,12 @@ public class BotHealth : NetworkBehaviour
             return;
 
         float normalized = maxHits > 0 ? (float)RemainingHits.Value / maxHits : 0;
-
         healthbar.fillAmount = normalized;
     }
 
     public void ResetHealthUI()
     {
         if (!healthbar) return;
-
         healthbar.fillAmount = 1f;
     }
 
@@ -84,28 +97,38 @@ public class BotHealth : NetworkBehaviour
 
         RemainingHits.Value--;
 
+        // 🔊 Hit sound on all clients
         PlayHitFxClientRpc();
 
         if (RemainingHits.Value <= 0)
         {
-            // Bot is dead: respawn the host back at the guard spawn
-            // and prevent re-using this spawn.
+            // 💥 Death FX (sound + particles) on all clients
+            PlayDeathFxClientRpc(transform.position);
+
+            // Bot is dead: notify GuardPrefabSwapper / respawn logic
             if (GuardPrefabSwapper.Instance != null)
             {
                 GuardPrefabSwapper.Instance.OnControlledBotDestroyed();
             }
-
-            //// Despawn bot
-            //if (NetworkObject && NetworkObject.IsSpawned)
-            //    NetworkObject.Despawn(true);
-            //else
-            //    Destroy(gameObject);
         }
     }
 
     [ClientRpc]
     private void PlayHitFxClientRpc()
     {
-        // Optional: flash, play sound, etc.
+        if (hitAudioSource != null && hitClip != null)
+        {
+            hitAudioSource.PlayOneShot(hitClip);
+        }
+        // If you want a small hit flash, you can also trigger a local material flash here.
+    }
+
+    [ClientRpc]
+    private void PlayDeathFxClientRpc(Vector3 position)
+    {
+        if (deathFxPrefab != null)
+        {
+            Instantiate(deathFxPrefab, position, Quaternion.identity);
+        }
     }
 }

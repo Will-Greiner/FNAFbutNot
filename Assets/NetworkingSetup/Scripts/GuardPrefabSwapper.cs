@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class GuardPrefabSwapper : NetworkBehaviour
 {
@@ -210,11 +211,18 @@ public class GuardPrefabSwapper : NetworkBehaviour
     [ClientRpc]
     private void ShowGameOverClientRpc()
     {
-        // Show the GameOver UI on every client
-        if (GameOverUIController.Instance != null)
+        //// Show the GameOver UI on every client
+        //if (GameOverUIController.Instance != null)
+        //{
+        //    GameOverUIController.Instance.ShowGameOver();
+        //}
+
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsClient)
         {
-            GameOverUIController.Instance.ShowGameOver();
+            NetworkManager.Singleton.Shutdown();
         }
+
+        SceneManager.LoadScene("GameOver");
     }
 
     [ClientRpc]
@@ -228,6 +236,16 @@ public class GuardPrefabSwapper : NetworkBehaviour
 
         if (guardEndGameUIParent)
             guardEndGameUIParent.SetActive(true);
+
+        if (SceneMusicPlayer.Instance != null)
+        {
+            SceneMusicPlayer.Instance.PlayEndGameMusic();
+        }
+
+        if (EndGameChromaticController.Instance != null)
+        {
+            EndGameChromaticController.Instance.TriggerEndGameEffect();
+        }
     }
 
     private void ServerRespawnPlayer(GameObject prefab, Vector3 position, Quaternion rotation)

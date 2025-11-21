@@ -12,6 +12,11 @@ public class ThirdPersonController : NetworkBehaviour
     [SerializeField] private Transform camFollow;  // pivot on the player the camera orbits
     [SerializeField] private Animator animator;
 
+    [Header("Footsteps")]
+    [SerializeField] private AudioSource footstepSource;
+    [SerializeField] private AudioClip[] footstepClips;
+    [SerializeField, Range(0f, 1f)] private float footstepVolume = 1f;
+
     private Rigidbody rb;
     private OrbitCamera _localOrbit;
     AnimatronicAttack animAttack;
@@ -204,5 +209,22 @@ public class ThirdPersonController : NetworkBehaviour
         bool isMoving = lastMoveDir.sqrMagnitude > 1e-4f;
         if (animator != null)
             animator.SetBool("isMoving", isMoving);
+    }
+
+    public void PlayFootstep()
+    {
+        // Optional: only play if we're actually moving
+        bool isMoving = lastMoveDir.sqrMagnitude > 1e-4f;
+        if (!isMoving)
+            return;
+
+        if (footstepSource == null || footstepClips == null || footstepClips.Length == 0)
+            return;
+
+        var clip = footstepClips[Random.Range(0, footstepClips.Length)];
+        if (clip == null)
+            return;
+
+        footstepSource.PlayOneShot(clip, footstepVolume);
     }
 }

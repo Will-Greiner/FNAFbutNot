@@ -1,5 +1,6 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Unity.Netcode;
+using System;
 
 public class Shotgun : NetworkBehaviour
 {
@@ -14,13 +15,19 @@ public class Shotgun : NetworkBehaviour
     [SerializeField] private bool requireLineOfSight = true;
     [SerializeField] private LayerMask losBlockers;
 
+    [Header("Audio & VFX")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip fireClip;
+    [SerializeField] private AudioClip reloadClip;      
+    [SerializeField] private ParticleSystem muzzleFlash;
+    [SerializeField] private ParticleSystem smoke;
+
     [SerializeField] private Animator animator;
 
     private float cooldownLocal;
     public float AttackCooldown => attackCooldown;
     public event System.Action LocalAttackFired;
 
-    // used by movement to lock input
     private bool isAttacking;
     public bool IsAttacking => isAttacking;
 
@@ -44,22 +51,16 @@ public class Shotgun : NetworkBehaviour
 
         cooldownLocal -= Time.deltaTime;
 
-        // start attack on button press; actual hit comes from animation event
         if (Input.GetButtonDown("Fire1") && cooldownLocal <= 0f && !isAttacking)
         {
             cooldownLocal = attackCooldown;
             isAttacking = true;
-            LocalAttackFired?.Invoke(); // for cooldown UI
+            LocalAttackFired?.Invoke();
 
-            // play the attack animation on all clients
-            PlayShotgunFxClientRpc();
+            RequestShotgunFxServerRpc();
         }
     }
 
-    /// <summary>
-    /// Called from an animation event at the moment of the muzzle flash / hit.
-    /// Animation clip event name should be "AnimationAttackHit".
-    /// </summary>
     public void AnimationAttackHit()
     {
         if (!IsOwner)
@@ -71,16 +72,34 @@ public class Shotgun : NetworkBehaviour
         TryShotgunServerRpc(originPos, forward);
     }
 
-    /// <summary>
-    /// Called from an animation event at the end of the attack animation.
-    /// Animation clip event name should be "AnimationAttackEnd".
-    /// </summary>
     public void AnimationAttackEnd()
     {
         if (!IsOwner)
             return;
 
         isAttacking = false;
+    }
+
+    // 👇 NEW: public helpers for animation events / other scripts
+
+    public void PlayFireSound()
+    {
+        if (audioSource != null && fireClip != null)
+            audioSource.PlayOneShot(fireClip);
+
+        if (muzzleFlash != null)
+        {
+            muzzleFlash.gameObject.SetActive(true);
+            muzzleFlash.Play();
+            smoke.gameObject.SetActive(true);
+            smoke.Play();
+        }
+    }
+
+    public void PlayReloadSound()
+    {
+        if (audioSource != null && reloadClip != null)
+            audioSource.PlayOneShot(reloadClip);
     }
 
     [ServerRpc]
@@ -119,17 +138,14 @@ public class Shotgun : NetworkBehaviour
             if (netObj == null || netObj.NetworkObjectId == NetworkObjectId)
                 continue;
 
-            // Only handle animatronic players
             if (!netObj.CompareTag("Animatronic"))
                 continue;
 
-            // Let the manager handle despawn, camera cycling, and gameover checks
             if (AnimatronicGameManager.Instance != null)
             {
                 AnimatronicGameManager.Instance.KillAnimatronic(netObj);
             }
 
-            // Shotgun: stop after first animatronic hit
             break;
         }
     }
@@ -141,7 +157,19 @@ public class Shotgun : NetworkBehaviour
             animator.SetTrigger("attack");
     }
 
-    // ------- server cooldown tracking -------
+    [ServerRpc]
+    private void RequestShotgunFxServerRpc(ServerRpcParams rpcParams = default)
+    {
+        if (rpcParams.Receive.SenderClientId != OwnerClientId)
+            return;
+
+        if (!CanServerAttack())
+            return;
+        SetServerCooldown();
+
+        PlayShotgunFxClientRpc();
+    }
+
     private double _serverNextAttackTime;
     private bool CanServerAttack()
         => NetworkManager != null &&

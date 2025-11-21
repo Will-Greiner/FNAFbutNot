@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 5311004283090878434}
   - component: {fileID: 1847053955267768267}
   - component: {fileID: -8272507441516933886}
+  - component: {fileID: 6579239152643620803}
   m_Layer: 6
   m_Name: CarlGameplay
   m_TagString: Animatronic
@@ -231,6 +232,14 @@ MonoBehaviour:
   forwardRef: {fileID: 2651851597959439470}
   camFollow: {fileID: 2651851597959439470}
   animator: {fileID: 4847250231441154992}
+  footstepSource: {fileID: 6579239152643620803}
+  footstepClips:
+  - {fileID: 8300000, guid: f0930cc00ab3cda4e98ff201e9ad5c2b, type: 3}
+  - {fileID: 8300000, guid: b447e2c58631b27469f75df54988beb7, type: 3}
+  - {fileID: 8300000, guid: 692a43d87555ecb4898ed1250941fc06, type: 3}
+  - {fileID: 8300000, guid: a2eca2afadbc299449ce6732bdc5577e, type: 3}
+  - {fileID: 8300000, guid: bc0163b4c80674443b092fc7bbf50f79, type: 3}
+  footstepVolume: 1
 --- !u!114 &2368895085328688059
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -318,6 +327,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   animator: {fileID: 4847250231441154992}
+  attackAudioSource: {fileID: 6579239152643620803}
+  attackClips:
+  - {fileID: 8300000, guid: b900944db2d0a004ebb469b055b3a140, type: 3}
+  attackVolume: 1
 --- !u!114 &-8272507441516933886
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -331,6 +344,103 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AnimatronicRegistration
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!82 &6579239152643620803
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 825888122726571102}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &9009526265421854190
 GameObject:
   m_ObjectHideFlags: 0
@@ -370,6 +480,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2617553097184549763}
     m_Modifications:
+    - target: {fileID: -8792005836817724869, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.2
@@ -426,14 +540,54 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -8655045846499467475, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -8048449339099286135, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -6333759595591716043, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -4582052501566811095, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -2815845199206016706, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -1439575531453701817, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -398877262325918427, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 741808593568725213, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
       propertyPath: m_Name
       value: Carl
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 1042211934068267208, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: cc0aa5db0e98da74093e9c9ceafe3533, type: 2}
+    - target: {fileID: 1387374672151398992, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 1492654861291761757, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -442,10 +596,26 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: cc0aa5db0e98da74093e9c9ceafe3533, type: 2}
+    - target: {fileID: 3059065574004330325, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3382331824429025652, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 3548317412440846561, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: cc0aa5db0e98da74093e9c9ceafe3533, type: 2}
+    - target: {fileID: 3820995357538364403, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5134361494983228431, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 5607516660814414489, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -454,10 +624,26 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: cc0aa5db0e98da74093e9c9ceafe3533, type: 2}
+    - target: {fileID: 7036213049465896255, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 7964128061905862814, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: cc0aa5db0e98da74093e9c9ceafe3533, type: 2}
+    - target: {fileID: 8115021060556626587, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8875794027958472768, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8987986278895987573, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -468,6 +654,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5201921171796003723}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4535769217247738671}
   m_SourcePrefab: {fileID: 100100000, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}
 --- !u!1 &7095950908483052352 stripped
 GameObject:
@@ -509,6 +698,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AnimatronicAttackAnimationRelay
   attack: {fileID: 1847053955267768267}
+--- !u!114 &4535769217247738671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7095950908483052352}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74c6e5e0c26911940be8f735dbbd3227, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FootstepAnimationRelay
+  controller: {fileID: 8359475678454511402}
 --- !u!4 &7580175470278113786 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 3052114e23a94e64f94e6b46c82b664c, type: 3}

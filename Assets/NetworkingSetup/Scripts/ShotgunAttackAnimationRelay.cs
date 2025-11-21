@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class ShotgunAttackAnimationRelay : MonoBehaviour
 {
@@ -11,7 +11,7 @@ public class ShotgunAttackAnimationRelay : MonoBehaviour
         {
             attack = GetComponentInParent<Shotgun>();
             if (attack == null)
-                Debug.LogWarning("BotAttackAnimationRelay: BotAttack not found in parents.");
+                Debug.LogWarning("ShotgunAttackAnimationRelay: Shotgun not found in parents.");
         }
     }
 
@@ -25,5 +25,17 @@ public class ShotgunAttackAnimationRelay : MonoBehaviour
     {
         if (attack != null)
             attack.AnimationAttackEnd();
+    }
+
+    public void PlayFireSound()
+    {
+        if (attack != null)
+            attack.PlayFireSound();
+    }
+
+    public void PlayReloadSound()
+    {
+        if (attack != null)
+            attack.PlayReloadSound();
     }
 }

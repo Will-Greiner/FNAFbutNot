@@ -14,29 +14,49 @@ public class AnimatronicAttack : NetworkBehaviour
     [SerializeField] private bool requireLineOfSight = true;
     [SerializeField] private LayerMask losBlockers;  // walls, props, etc.
 
+    [Header("Visuals / Anim")]
+    [SerializeField] private Animator animator;
+
+    [Header("Audio")]
+    [SerializeField] private AudioSource attackAudioSource;
+    [SerializeField] private AudioClip[] attackClips;
+    [SerializeField, Range(0f, 1f)] private float attackVolume = 1f;
+
     private float cooldownLocal;
     public float AttackCooldown => attackCooldown;
 
     public event System.Action LocalAttackFired;
 
-    [SerializeField] private Animator animator;
-
     private bool isAttacking;
     public bool IsAttacking => isAttacking;
 
+    private double _serverNextAttackTime;
+    private static readonly Collider[] s_overlapCache = new Collider[16];
+
     private void Reset()
     {
-        attackOrigin = transform; // fallback
+        attackOrigin = transform;
+    }
+
+    private void Awake()
+    {
+        // Auto-wire animator / audio if not set in inspector
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>(true);
+
+        if (attackAudioSource == null)
+            attackAudioSource = GetComponentInChildren<AudioSource>(true);
     }
 
     public override void OnNetworkSpawn()
     {
-        if (!IsServer && animator) animator.applyRootMotion = false;
+        if (!IsServer && animator)
+            animator.applyRootMotion = false;
     }
 
     private void Update()
     {
-        if (!IsOwner) 
+        if (!IsOwner)
             return;
 
         cooldownLocal -= Time.deltaTime;
@@ -45,15 +65,19 @@ public class AnimatronicAttack : NetworkBehaviour
         {
             cooldownLocal = attackCooldown;
             isAttacking = true;
-            LocalAttackFired?.Invoke();
+            LocalAttackFired?.Invoke(); // cooldown UI, etc.
 
+            // Ask the server to trigger attack FX on everyone
             RequestAttackFxServerRpc();
         }
     }
 
+    // ------ animation events (called via AnimatronicAttackAnimationRelay) ------
+
     public void AnimationAttackHit()
     {
-        if (!IsOwner) return;
+        if (!IsOwner)
+            return;
 
         Vector3 originPos = attackOrigin ? attackOrigin.position : transform.position;
         Vector3 forward = attackOrigin ? attackOrigin.forward : transform.forward;
@@ -69,76 +93,93 @@ public class AnimatronicAttack : NetworkBehaviour
         isAttacking = false;
     }
 
-    [ServerRpc]
-    private void TryAttackServerRpc(Vector3 originPos, Vector3 forward)
-    {
-        // Overlap sphere in a small capsule/cone in front of attacker
-        int hits = Physics.OverlapSphereNonAlloc(originPos + forward.normalized * attackRange * 0.6f, attackRadius, s_overlapCache, hittableLayers, QueryTriggerInteraction.Collide);
-
-        for (int i = 0; i < hits; i++)
-        {
-            var collider = s_overlapCache[i];
-            Debug.Log(collider);
-            if (!collider) continue;
-
-            // Basic facing/range validation
-            Vector3 to = collider.transform.position - originPos;
-            if (to.sqrMagnitude > attackRange * attackRange) continue;
-            //if (Vector3.Dot(forward.normalized, to.normalized) > 0.2f) continue;
-
-            if (requireLineOfSight)
-            {
-                if (Physics.Linecast(originPos, collider.bounds.center, out var hit, losBlockers, QueryTriggerInteraction.Ignore))
-                    continue;
-            }
-
-            // Find stunstate on target root
-            var netObj = collider.GetComponentInParent<NetworkObject>();
-            if (netObj == null || netObj.NetworkObjectId == NetworkObjectId) continue; // don't hit yourself
-
-            // If it has bot health, apply hit (3 hits -> destroy & respawn)
-            var botHealth = netObj.GetComponent<BotHealth>();
-            if (botHealth != null)
-            {
-                botHealth.ApplyHit(OwnerClientId);
-            }
-        }
-    }
+    // ------ server-side attack + FX gating ------
 
     [ServerRpc]
     private void RequestAttackFxServerRpc(ServerRpcParams rpcParams = default)
     {
-        // Optional safety: only allow the owner to request
+        // Only the owner may request
         if (rpcParams.Receive.SenderClientId != OwnerClientId)
             return;
 
-        // Server-side cooldown gate (one attack per AttackCooldown)
+        // Server-side cooldown (authoritative)
         if (!CanServerAttack())
             return;
 
         SetServerCooldown();
 
-        // Now actually trigger the animation on all clients
+        // Kick off animation + audio on all clients
         PlayAttackFxClientRpc();
     }
 
     [ClientRpc]
-    private void PlayAttackFxClientRpc() 
+    private void PlayAttackFxClientRpc()
     {
-        animator.SetTrigger("attack");
+        if (animator != null)
+            animator.SetTrigger("attack");
+
+        PlayAttackSoundLocal();
     }
 
-    // ------- server cooldown tracking -------
-    private double _serverNextAttackTime;
+    private void PlayAttackSoundLocal()
+    {
+        if (attackAudioSource == null || attackClips == null || attackClips.Length == 0)
+            return;
+
+        var clip = attackClips[Random.Range(0, attackClips.Length)];
+        if (clip == null) return;
+
+        attackAudioSource.PlayOneShot(clip, attackVolume);
+    }
+
+    [ServerRpc]
+    private void TryAttackServerRpc(Vector3 originPos, Vector3 forward)
+    {
+        // NOTE: no cooldown check here; it's handled in RequestAttackFxServerRpc.
+
+        int hits = Physics.OverlapSphereNonAlloc(
+            originPos + forward.normalized * attackRange * 0.6f,
+            attackRadius,
+            s_overlapCache,
+            hittableLayers,
+            QueryTriggerInteraction.Collide);
+
+        for (int i = 0; i < hits; i++)
+        {
+            var collider = s_overlapCache[i];
+            if (!collider) continue;
+
+            Vector3 to = collider.transform.position - originPos;
+            if (to.sqrMagnitude > attackRange * attackRange) continue;
+
+            if (requireLineOfSight)
+            {
+                if (Physics.Linecast(originPos,
+                                     collider.bounds.center,
+                                     out var hit,
+                                     losBlockers,
+                                     QueryTriggerInteraction.Ignore))
+                    continue;
+            }
+
+            var netObj = collider.GetComponentInParent<NetworkObject>();
+            if (netObj == null || netObj.NetworkObjectId == NetworkObjectId)
+                continue;
+
+            // apply stun / damage here...
+        }
+    }
+
+    // ------ server cooldown helpers ------
+
     private bool CanServerAttack()
-        => NetworkManager != null && NetworkManager.IsServer && NetworkManager.ServerTime.Time >= _serverNextAttackTime;
+        => NetworkManager != null &&
+           NetworkManager.IsServer &&
+           NetworkManager.ServerTime.Time >= _serverNextAttackTime;
 
     private void SetServerCooldown()
     {
         if (!NetworkManager) return;
         _serverNextAttackTime = NetworkManager.ServerTime.Time + attackCooldown;
     }
-
-    // shared overlap buffer (avoid allocs)
-    private static readonly Collider[] s_overlapCache = new Collider[16];
 }

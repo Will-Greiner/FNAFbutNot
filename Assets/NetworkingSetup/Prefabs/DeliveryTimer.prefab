@@ -186,5 +186,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EndgameCountdownUI
   timerText: {fileID: 7914217851239772871}
-  countdownDuration: 30
+  countdownDuration: 120
   autoStartOnEnable: 1
