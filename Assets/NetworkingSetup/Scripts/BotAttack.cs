@@ -91,7 +91,7 @@ public class BotAttack : NetworkBehaviour
             return;
 
         isAttacking = false;
-        shockParticles.gameObject.SetActive(false);
+        EndAttackFxClientRpc();
     }
 
     // Server side gating for attack + FX
@@ -123,6 +123,11 @@ public class BotAttack : NetworkBehaviour
         shockParticles.Play();
     }
 
+    [ClientRpc]
+    private void EndAttackFxClientRpc()
+    {
+        shockParticles.gameObject.SetActive(false);
+    }
     private void PlayAttackSoundLocal()
     {
         if (attackAudioSource == null || attackClips == null || attackClips.Length == 0)
