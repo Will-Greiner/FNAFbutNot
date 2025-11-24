@@ -166,7 +166,13 @@ public class AnimatronicAttack : NetworkBehaviour
             if (netObj == null || netObj.NetworkObjectId == NetworkObjectId)
                 continue;
 
-            // apply stun / damage here...
+            var botHealth = netObj.GetComponent<BotHealth>();
+            if (botHealth != null)
+            {
+                // Server-side: tell BotHealth this attacker hit it
+                botHealth.ApplyHit(OwnerClientId);
+                break; // stop after first valid target
+            }
         }
     }
 

@@ -56,7 +56,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2642185326
+  GlobalObjectIdHash: 3424922549
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -145,7 +145,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPMovementBot
   ShowTopMostFoldoutHeaderGroup: 1
-  sensitivity: {x: 800, y: 800}
+  sensitivity: {x: 400, y: 400}
   cameraTransform: {fileID: 3888146883841664558}
   minPitch: -90
   maxPitch: 90
@@ -254,7 +254,7 @@ MonoBehaviour:
   attackRange: 2.2
   attackRadius: 0.9
   stunSeconds: 2
-  attackCooldown: 2
+  attackCooldown: 5
   hittableLayers:
     serializedVersion: 2
     m_Bits: 64

@@ -18,6 +18,10 @@ public class GuardPrefabSwapper : NetworkBehaviour
     [Tooltip("Spawn point for the end-game prefab.")]
     [SerializeField] private Transform shotgunSpawnPoint;
 
+    [Header("Bot Lives / Game Over")]
+    [SerializeField] private int maxDisabledBotsBeforeGameOver = 3;
+    private int disabledBotsCount = 0;
+
     // Track spawn usage
     private readonly HashSet<int> usedSpawnIndices = new();
     private int currentSpawnIndex = -1; // -1 = in guard form / no bot
@@ -113,6 +117,8 @@ public class GuardPrefabSwapper : NetworkBehaviour
         if (!IsServer || !NetworkManager.Singleton.IsHost)
             return;
 
+        disabledBotsCount++;
+
         if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(HostClientId, out var conn) || conn.PlayerObject == null)
         {
             Debug.LogWarning("Host PlayerObject not found in OnControlledBotDestroyed.");
@@ -137,8 +143,11 @@ public class GuardPrefabSwapper : NetworkBehaviour
 
         if (!botsDepletedGameOverTriggered && !AnySpawnAvailable())
         {
-            botsDepletedGameOverTriggered = true;
-            TriggerBotsDepletedGameOver();
+            if (disabledBotsCount >= maxDisabledBotsBeforeGameOver || !AnySpawnAvailable())
+            {
+                botsDepletedGameOverTriggered = true;
+                TriggerBotsDepletedGameOver();
+            }
         }
     }
 

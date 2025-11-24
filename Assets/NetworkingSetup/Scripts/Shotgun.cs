@@ -78,9 +78,10 @@ public class Shotgun : NetworkBehaviour
             return;
 
         isAttacking = false;
+
+        EndFxClientRpc();
     }
 
-    // 👇 NEW: public helpers for animation events / other scripts
 
     public void PlayFireSound()
     {
@@ -155,6 +156,13 @@ public class Shotgun : NetworkBehaviour
     {
         if (animator != null)
             animator.SetTrigger("attack");
+    }
+
+    [ClientRpc]
+    private void EndFxClientRpc()
+    {
+        muzzleFlash.gameObject.SetActive(false);
+        smoke.gameObject.SetActive(false);
     }
 
     [ServerRpc]
